@@ -15,23 +15,34 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 
 ## Why
 
-Real-world assets are moving on-chain, but owning a theme ("AI chips + Bitcoin", "Avalanche DeFi") still means
-picking assets, sizing weights, one swap and one approval per asset, and rebalancing by hand. Prices, volume and
-history are spread across chains, and index products are built by institutions, not by the people who have the idea.
+Real-world assets are moving on-chain, but owning a *theme* is still a chore. To hold "AI chips + Bitcoin" you pick the assets, size the weights, sign one swap and one approval per asset, and then rebalance by hand forever. The data you need is scattered across chains and dashboards. Index products exist, but they are built by institutions, not by the people who have the idea.
+
+**Pantado turns any market narrative into one token.**
 
 ## What Pantado does
 
+Pantado lets anyone go from a market idea to owning it, in three steps:
+
+1. **Understand the market.** Ask an AI agent about any stock or token and get answers built on live on-chain data, not guesses. Every number is pulled from a tool call and checked before you see it.
+2. **Turn the idea into an index.** Describe a theme like "AI chips + Bitcoin" and the agent drafts the basket: assets, weights, a backtest and the risks. Tune it, publish it, and earn 0.20% every time someone trades it.
+3. **Own the whole basket as one token.** One USDC payment buys every asset in a single transaction and gives you one ERC-20 backed by the real assets in its vault. Exit any time: sell for USDC, or redeem for the assets themselves, free.
+
+No institution in between, no swap-by-swap execution, no manual rebalancing.
+
+Index tokens have open supply: minted when you buy, burned when you exit, and always priced at the value of the vault. They never sell out.
+
+## Features
+
 | | |
 |---|---|
-| **Ask** | An AI agent answers questions about any listed stock or token with live on-chain data: price, 24h / 7d / 30d change, range, volatility, drawdown, volume. Every number in an answer comes from a tool call and is checked against the tool data before it is shown. No investment advice. |
-| **Build** | Describe a theme and the agent drafts an index: assets, weights, a backtest against AVAX and the main risks. **View** opens the draft in Create. |
-| **Create & publish** | Mix tokenized stocks and Avalanche tokens (2–20 assets). Three presets (Equal, Market cap, Low volatility), hand tuning, a 90-day backtest, rebalancing Off / Manual / Auto. Publish for 5 USDC and earn 0.20% of every buy and sell of your index. |
-| **Buy** | Pay USDC, receive one ERC-20 backed by every asset in its vault, in one transaction. If any purchase fails, the whole trade reverts. |
-| **Exit** | Sell for USDC, or **redeem in kind** for the underlying assets: always open, fee-free, needs no price, cannot be paused. |
-| **Portfolio** | Positions, PnL, drift from target, creator earnings and each index's rebalance history. |
-| **Sign in** | Google, X, email or passkey (embedded wallet, test USDC and a little gas on first sign-in), or Core / MetaMask. |
+| **Ask** | Live price, 24h / 7d / 30d change, range, volatility, drawdown, volume. Auto or Deep mode. Research, not investment advice. |
+| **Build** | AI-drafted index with weights, backtest vs AVAX and main risks; **View** opens it in Create. |
+| **Create & publish** | 2–20 tokenized stocks and Avalanche tokens, presets (Equal / Market cap / Low volatility), 90-day backtest, rebalancing Off / Manual / Auto. 5 USDC to publish. |
+| **Buy & exit** | One transaction, all or nothing. Sell for USDC or redeem in kind: always open, fee-free, can't be paused. |
+| **Portfolio** | Positions, PnL, drift, creator earnings, rebalance history. |
+| **Sign in** | Google, X, email or passkey with an embedded wallet and test funds, or Core / MetaMask. |
 
-The marketplace lists 35 Avalanche tokens, 25 tokenized stocks and 10+ community indexes.
+**Marketplace:** 35 Avalanche tokens, 25 tokenized stocks and 10+ community indexes.
 
 ## A note on stock data
 
