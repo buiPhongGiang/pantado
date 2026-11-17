@@ -1,0 +1,12 @@
+**/node_modules
+**/.next
+**/dist
+**/coverage
+contracts/out
+contracts/cache
+contracts/broadcast
+contracts/lib/*/test
+.env
+.env.*
+**/.DS_Store
+test/e2e-app/.market-history.json*

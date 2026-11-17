@@ -1,0 +1,7 @@
+Token Avalanche: tra theo contract address trong cac kho logo cong khai tren GitHub
+  trustwallet/assets (avalanchec), traderjoe-xyz/joe-tokenlists, pharaohexchange/pharaoh-assets.
+  usde, super: logo cung brand lay tu Trust Wallet (Ethereum) vi khong co ban Avalanche do phan giai cao.
+Co phieu: nvstly/icons (PNG, mot so logo mau trang danh cho nen toi: aapl, amzn, hims, pltr, rblx).
+  spcx, crcl: SVG mot mau tu simple-icons.
+Vi/social: core = ava-labs/core-extension; metamask = MetaMask/metamask-extension;
+  walletconnect = WalletConnect/walletconnect-assets; google = firebase/firebaseui-web; x = simple-icons.
