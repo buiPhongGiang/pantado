@@ -3,7 +3,7 @@
 <h3 align="center">Any narrative. One token.</h3>
 
 <p align="center">
-An AI agent that turns tokenized stocks and Avalanche tokens into indexes you can ask about, build, buy and share.<br>
+An AI Agent that turns tokenized stocks and Avalanche tokens into indexes that can be asked, built, bought and shared.<br>
 Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pantado.xyz</a>
 </p>
 
