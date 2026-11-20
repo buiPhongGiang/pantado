@@ -8,10 +8,32 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 </p>
 
 <p align="center">
-<b>Demo video:</b> [link] · <b>Pitch deck:</b> [link] · <b>Live app:</b> <a href="https://pantado.xyz">pantado.xyz</a> · <b>Team:</b> [names]
+<img alt="Avalanche" src="https://img.shields.io/badge/Avalanche-live%20on%20Fuji-E84142?logo=avalanche&logoColor=white">
+<img alt="Contracts" src="https://img.shields.io/badge/contracts-11%20on%20Fuji-E84142">
+<img alt="Pharaoh-ready" src="https://img.shields.io/badge/stock%20pools-Pharaoh--ready-F2A900">
+<img alt="AI agent" src="https://img.shields.io/badge/AI%20agent-Claude-D97757">
+<img alt="Tests" src="https://img.shields.io/badge/tests-400%2B%20passing-2fbf71">
+</p>
+
+<p align="center">
+<b>🌐 Live app:</b> <a href="https://pantado.xyz">pantado.xyz</a> · <b>🎬 Demo video:</b> [link] · <b>📊 Pitch deck:</b> [link] · <b>👥 Team:</b> [names]
 </p>
 
 ---
+
+## At a glance
+
+| | |
+|---|---|
+| **What** | An AI agent that turns any market narrative into one index token: ask about a stock or token, draft a basket with weights, a backtest and risks, publish it, and buy the whole basket in one USDC transaction. |
+| **Try it** | [pantado.xyz](https://pantado.xyz): sign in with Google, X, email or passkey (embedded wallet with test funds), or Core / MetaMask. |
+| **Avalanche** | 11 contracts on Fuji · 35 Avalanche tokens priced from Avalanche mainnet · `DexVenue` routes tested on an Avalanche mainnet fork (30 routes, quote = swap) · ready for Pharaoh's permissionless stock pools |
+| **Safety** | Mint and burn pro rata to the vault · redeem in kind always open and free · stale prices pause buys, sells and auctions, never redeem · rebalances under notice, daily cap and loss budget |
+| **Tested** | 90 Foundry tests incl. invariants · 179 TypeScript · 127 web · Playwright e2e 7 / 7 |
+
+**Contents:** [Why](#why) · [What it does](#what-pantado-does) · [Features](#features) ·
+[Stock data](#stock-data-pharaoh-ready) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) ·
+[Tested](#tested) · [Roadmap](#roadmap) · [Run it](#run-it-locally)
 
 ## Why
 
@@ -44,7 +66,7 @@ Index tokens have open supply: minted when you buy, burned when you exit, and al
 
 **Marketplace:** 35 Avalanche tokens, 25 tokenized stocks and 10+ community indexes.
 
-## A note on stock data
+## Stock data: Pharaoh-ready
 
 > **Pantado is built for Avalanche-native tokenized stocks.** Permissionless tokenized-stock pools on Avalanche are
 > coming with **Pharaoh** but are not live yet. Until they are, this demo prices its tokenized stocks from a
@@ -123,7 +145,7 @@ equals `IndexLens` at the same block.
 
 - **Done:** product UI · 11 contracts live on Fuji · AI agent · mainnet price data · DEX venue tested on a mainnet fork.
 - **Next:** mainnet beta, completed once Pharaoh's permissionless stock pools launch on Avalanche (not live yet;
-  until then stock data uses the temporary reference market, see [A note on stock data](#a-note-on-stock-data)).
+  until then stock data uses the temporary reference market, see [Stock data: Pharaoh-ready](#stock-data-pharaoh-ready)).
 - **Later:** meme-token indexes on Avalanche · open API for outside agents · verified creators.
 
 ## Run it locally
