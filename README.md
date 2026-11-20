@@ -8,6 +8,7 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 </p>
 
 <p align="center">
+<a href="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml"><img alt="contracts CI" src="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml/badge.svg"></a>
 <img alt="Avalanche" src="https://img.shields.io/badge/Avalanche-live%20on%20Fuji-E84142?logo=avalanche&logoColor=white">
 <img alt="Contracts" src="https://img.shields.io/badge/contracts-11%20on%20Fuji-E84142">
 <img alt="Pharaoh-ready" src="https://img.shields.io/badge/stock%20pools-Pharaoh--ready-F2A900">
@@ -32,7 +33,7 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 | **Tested** | 90 Foundry tests incl. invariants · 179 TypeScript · 127 web · Playwright e2e 7 / 7 |
 
 **Contents:** [Why](#why) · [What it does](#what-pantado-does) · [Features](#features) ·
-[Stock data](#stock-data-pharaoh-ready) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) ·
+[Stock data](#stock-data-pharaoh-ready) · [Avalanche](#how-pantado-uses-avalanche) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) ·
 [Tested](#tested) · [Roadmap](#roadmap) · [Run it](#run-it-locally)
 
 ## Why
@@ -77,6 +78,16 @@ Index tokens have open supply: minted when you buy, burned when you exit, and al
 > - On Fuji, stocks trade as test pTokens priced from that reference; nothing on Fuji has real value.
 > - When the Avalanche stock pools launch, they replace the stand-in. Each stock's data source is set per asset in
 >   `config/assets.json`; the switch needs no change to the index contracts.
+
+## How Pantado uses Avalanche
+
+| Avalanche piece | How Pantado uses it | Check it |
+|---|---|---|
+| **C-Chain (Fuji)** | 11 contracts run the product: factory, one ERC-20 vault per index, oracle, router, rebalancer, fee splitter, venues | [Contracts on Fuji](#contracts-on-avalanche-fuji-chain-43113): source verified on Snowtrace |
+| **Avalanche mainnet data** | Prices, 24h / 7d / 30d history and volume for the 35 Avalanche tokens are read from Avalanche C-Chain mainnet (read-only) | Ask the agent about AVAX, BTC.b or JOE at [pantado.xyz](https://pantado.xyz) |
+| **Avalanche DEX liquidity** | `DexVenue` routes buys and sells through constant-product pools on Avalanche C-Chain mainnet; every configured route is tested on a mainnet fork (quote = swap, both ways), plus the production deploy and an index's whole life with real USDC | `AVALANCHE_FORK_RPC=… forge test --match-path "test/fork/*"` |
+| **Tokenized stocks on Avalanche** | Built for Avalanche-native stock pools (Pharaoh). Each asset's data source and venue are set per asset in `config/assets.json`; switching needs no contract change | [Stock data: Pharaoh-ready](#stock-data-pharaoh-ready) |
+| **Core wallet** | Sign in with Core (or MetaMask), or with Google / X / email / passkey through an embedded wallet | [pantado.xyz](https://pantado.xyz) |
 
 ## How it works
 
