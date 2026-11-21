@@ -33,7 +33,7 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 | **Tested** | 90 Foundry tests incl. invariants · 179 TypeScript · 127 web · Playwright e2e 7 / 7 |
 
 **Contents:** [Why](#why) · [What it does](#what-pantado-does) · [Features](#features) ·
-[Stock data](#stock-data-pharaoh-ready) · [Avalanche](#how-pantado-uses-avalanche) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) ·
+[Stock data](#stock-data-pharaoh-ready) · [Avalanche](#how-pantado-uses-avalanche) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) · [On-chain proof](#on-chain-proof-fuji) ·
 [Tested](#tested) · [Roadmap](#roadmap) · [Run it](#run-it-locally)
 
 ## Why
@@ -138,6 +138,58 @@ Index tokens have open supply: minted when you buy, burned when you exit, and al
 
 All 60 test asset tokens are listed in `contracts/deployments/fuji.json`. Assets on Fuji are test tokens priced
 from the mainnet reference markets; nothing on Fuji has real value.
+
+## On-chain proof (Fuji)
+
+Read from Fuji event logs and `IndexFactory.indexCount()` on 2026-11-21 (from block 61165284).
+
+| Metric | Value |
+|---|---|
+| Indexes created | 12, by 8 wallets |
+| Buys (`Bought`) | 38: 12 seed buys at creation + 26 buys from 9 wallets |
+| Sells / redeems in kind | 1 / 1 (TBB) |
+| Rebalance plans | 1 scheduled and started (HEDGE) |
+| Rebalance auctions | 11 opened, 8 filled |
+
+**One index, end to end: HEDGE "Digital Gold Hedge"**
+([`0x08E2…863b`](https://testnet.snowtrace.io/address/0x08E2b0adab79184b51948Db8e05B97734eA2863b))
+
+| Step | Event | Tx |
+|---|---|---|
+| Create index (5 USDC fee + seed buy) | `IndexCreated` | [`0x4378…6811`](https://testnet.snowtrace.io/tx/0x4378ed293d18a492f526cad4be481abdaadb55f63809a46461a1251f20276811) |
+| Buy (pro rata to the basket) | `Bought` | [`0xfe64…7a7b`](https://testnet.snowtrace.io/tx/0xfe64ffe3bc2421582701b0bc07d594f9146732aab24f94078bb4f41af2617a7b) |
+| Schedule rebalance (after notice) | `PlanScheduled` | [`0x5a1d…a4f4`](https://testnet.snowtrace.io/tx/0x5a1d1958d50ffdc38ffb8069ef14fbe4fccb44a621ba77aaec1191951d6ea4f4) |
+| Start rebalance (loss budget set) | `PlanStarted` | [`0xc5d7…7de3`](https://testnet.snowtrace.io/tx/0xc5d7a2e08b5f96dd6e84de83cdcbb8f282ca07aea24a5516e40e3529d4507de3) |
+| Open Dutch auction | `AuctionOpened` | [`0x501b…a414`](https://testnet.snowtrace.io/tx/0x501b6526d63ca296b0433649383e329cdb820e97da9359b394e327f37bbba414) |
+| Auction filled by filler | `AuctionFilled` | [`0x06e8…e5a9`](https://testnet.snowtrace.io/tx/0x06e85cf6544861330beefa2c7cc20509d494263efe8d121442918e184b31e5a9) |
+| Buy during rebalance | `Bought` | [`0xdc30…3379`](https://testnet.snowtrace.io/tx/0xdc30001a8d1a5417b2485fe56cf72b5d03ae55637b4226d15c9f9a4e43bd3379) |
+
+**All 12 indexes**
+
+| Ticker | Index | Created in tx |
+|---|---|---|
+| TBB | [`0x86A9…6690`](https://testnet.snowtrace.io/address/0x86A95f67F3f5fd8A3e5D31435DF689fFA0646690) | [`0xe7ad…5f7e`](https://testnet.snowtrace.io/tx/0xe7ad812096d1ac1b92eeffcd0d92c5536a973e018d38459f5b7c435fe0695f7e) |
+| CHIP | [`0x9CB9…2D82`](https://testnet.snowtrace.io/address/0x9CB91fC4D971Dd217a3Cb1C010C4eC8E1F2d2D82) | [`0x4d83…0a7d`](https://testnet.snowtrace.io/tx/0x4d8390c0bc7e461891d33263f48ea31181d1c8df1c081eac4c62bb0e904f0a7d) |
+| MAG7 | [`0xB146…DE22`](https://testnet.snowtrace.io/address/0xB146CB87086E98D1A4053640c2A316Fe7fD5De22) | [`0xdfab…0458`](https://testnet.snowtrace.io/tx/0xdfabba359a8a8ec43fd236b2489a2c87205da84ea6052d667a4b32fe9faa0458) |
+| CSTK | [`0x2B6a…A479`](https://testnet.snowtrace.io/address/0x2B6a2ae01efF233296d2384Fe89E94f10668A479) | [`0xb3e4…e8ba`](https://testnet.snowtrace.io/tx/0xb3e437dd1ea44224afa1e3664f58bf957095d6c8ca0dba31e6ac193ca4d8e8ba) |
+| MYBK | [`0xD8bA…667B`](https://testnet.snowtrace.io/address/0xD8bA107462507c69eB47eD9Dd2e2D4069eF6667B) | [`0x13f7…6e9a`](https://testnet.snowtrace.io/tx/0x13f7444bf010661e3c124bb1f1fa5973ac1e60572cd33d4f3420ecf7517d6e9a) |
+| AVDEX | [`0xa5C6…0cC6`](https://testnet.snowtrace.io/address/0xa5C6DDC25A3EdA037BA5885C852ff34E979A0cC6) | [`0xf31c…661c`](https://testnet.snowtrace.io/tx/0xf31cdad2fd3b5bbd13fac13d8f5174e25191291aec7b89e63fba46ed3f8b661c) |
+| AVBLU | [`0xc311…C8F3`](https://testnet.snowtrace.io/address/0xc311175Fd1Ccb0951F9a7437dd9796993E70C8F3) | [`0x4e9c…f780`](https://testnet.snowtrace.io/tx/0x4e9c479587f7a0ece7cbfab056c90ecd7fb133ea02e8c01763173e0c1799f780) |
+| AVMEME | [`0xe327…39C7`](https://testnet.snowtrace.io/address/0xe327d31574f8b7911680bC20298AD749aCc039C7) | [`0xaada…1428`](https://testnet.snowtrace.io/tx/0xaada168c340cb28c50d083b7ac85c1139fc5b207c055ac7d0846bb69ea351428) |
+| DEFI | [`0x8B9A…2b51`](https://testnet.snowtrace.io/address/0x8B9A2c62A696Ae24179Da4870e15b4C0dfb72b51) | [`0xae34…55a5`](https://testnet.snowtrace.io/tx/0xae34772278997de4b9aeb09230e3e6e582961010ef013eeaad252e32c92f55a5) |
+| HEDGE | [`0x08E2…863b`](https://testnet.snowtrace.io/address/0x08E2b0adab79184b51948Db8e05B97734eA2863b) | [`0x4378…6811`](https://testnet.snowtrace.io/tx/0x4378ed293d18a492f526cad4be481abdaadb55f63809a46461a1251f20276811) |
+| WSAVX | [`0x1555…14d3`](https://testnet.snowtrace.io/address/0x1555cd6AfE77a751872f689a1D76d02c04Cf14d3) | [`0x73ee…0866`](https://testnet.snowtrace.io/tx/0x73ee358695b6498142d5288256a259356b881aa194b32361bf99cca93e210866) |
+| AIB826 | [`0x7fDF…5406`](https://testnet.snowtrace.io/address/0x7fDF97e6A1899ed1A87972E9e0f5eaA783175406) | [`0xe6fa…d9af`](https://testnet.snowtrace.io/tx/0xe6facd24bc8464ba388183ec16f18ce8a5a67ac089aa2fd4c65c887d2dc0d9af) |
+
+**Exit paths on TBB** ([`0x86A9…6690`](https://testnet.snowtrace.io/address/0x86A95f67F3f5fd8A3e5D31435DF689fFA0646690)), 2026-11-21
+
+| Step | Event | Tx |
+|---|---|---|
+| Sell 0.3 units for USDC (pro rata, fresh prices) | `Sold` | [`0xb3cc…a666`](https://testnet.snowtrace.io/tx/0xb3ccc5551f3b95ff69be7d8e90358ed24bb58e5461f2edb874a0362acc51a666) |
+| Redeem 0.3 units in kind (fee-free, price-free) | `Redeemed` | [`0x3661…82c7`](https://testnet.snowtrace.io/tx/0x36616e9baf506a1bd068719d3765991211411964606d94936b0c92e47ead82c7) |
+
+Before the price pusher refreshed the oracle, the same sell reverted with `PriceStale` while redeem still succeeded:
+stale prices block buy and sell, never redeem.
 
 ## Tested
 
