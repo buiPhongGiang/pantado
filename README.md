@@ -1,23 +1,25 @@
 <p align="center"><img src="brand/banner.png" alt="Pantado" width="720"></p>
 
-<h3 align="center">Any narrative. One token.</h3>
+<h3 align="center">The Index Layer for Avalanche</h3>
+<p align="center"><b>Index anything. Verify everything.</b></p>
 
 <p align="center">
-An AI Agent that turns tokenized stocks and Avalanche tokens into indexes that can be asked, built, bought and shared.<br>
-Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pantado.xyz</a>
+Pantado is open index infrastructure: anyone defines an index over tokenized stocks, Vietnamese stocks and Avalanche
+tokens; a reporter network verifies every price on Pantado's own Avalanche L1 (independent operators next); and any app reads the
+level on-chain as a verifiable benchmark. An AI analyst helps you research and draft. Nothing is bought or sold.<br>
+Built on Avalanche · <a href="https://pantado.xyz">pantado.xyz</a>
 </p>
 
 <p align="center">
 <a href="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml"><img alt="contracts CI" src="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml/badge.svg"></a>
-<img alt="Avalanche" src="https://img.shields.io/badge/Avalanche-live%20on%20Fuji-E84142?logo=avalanche&logoColor=white">
-<img alt="Contracts" src="https://img.shields.io/badge/contracts-11%20on%20Fuji-E84142">
-<img alt="Pharaoh-ready" src="https://img.shields.io/badge/stock%20pools-Pharaoh--ready-F2A900">
+<img alt="Avalanche L1" src="https://img.shields.io/badge/Avalanche-L1%20%2B%20ICM-E84142?logo=avalanche&logoColor=white">
+<img alt="Index Layer" src="https://img.shields.io/badge/Index%20Layer-verifiable%20benchmarks-9052F9">
 <img alt="AI agent" src="https://img.shields.io/badge/AI%20agent-Claude-D97757">
-<img alt="Tests" src="https://img.shields.io/badge/tests-400%2B%20passing-2fbf71">
+<img alt="Tests" src="https://img.shields.io/badge/tests-450%2B%20passing-2fbf71">
 </p>
 
 <p align="center">
-<b>🌐 Live app:</b> <a href="https://pantado.xyz">pantado.xyz</a> · <b>🎬 Demo video:</b> [link] · <b>📊 Pitch deck:</b> [link] · <b>👥 Team:</b> [names]
+<b>🌐 App:</b> <a href="https://pantado.xyz">pantado.xyz</a> · <b>🎬 Demo video:</b> [link] · <b>📊 Pitch deck:</b> [link] · <b>👥 Team:</b> [names]
 </p>
 
 ---
@@ -26,101 +28,190 @@ Built on Avalanche · live on Fuji testnet · <a href="https://pantado.xyz">pant
 
 | | |
 |---|---|
-| **What** | An AI agent that turns any market narrative into one index token: ask about a stock or token, draft a basket with weights, a backtest and risks, publish it, and buy the whole basket in one USDC transaction. |
-| **Try it** | [pantado.xyz](https://pantado.xyz): sign in with Google, X, email or passkey (embedded wallet with test funds), or Core / MetaMask. |
-| **Avalanche** | 11 contracts on Fuji · 35 Avalanche tokens priced from Avalanche mainnet · `DexVenue` routes tested on an Avalanche mainnet fork (30 routes, quote = swap) · ready for Pharaoh's permissionless stock pools |
-| **Safety** | Mint and burn pro rata to the vault · redeem in kind always open and free · stale prices pause buys, sells and auctions, never redeem · rebalances under notice, daily cap and loss budget |
-| **Tested** | 90 Foundry tests incl. invariants · 179 TypeScript · 127 web · Playwright e2e 7 / 7 |
+| **What** | The Index Layer for Avalanche: a permissionless registry of indexes, a price network that verifies their inputs, and on-chain levels any app can use as a benchmark. |
+| **Three parts** | **Define** any index on `IndexRegistry` (network fee only) · **Verify** every price on the Pantado Price Chain (Avalanche L1, median of the reporters' submissions, delivered over ICM) · **Read** the level from the API or `levelOf()` on-chain |
+| **No trading** | Nothing is bought, sold, swapped, deposited or held. An index is data: its level is computed from published prices. No trading or holding fees. |
+| **Real data** | Vietnamese stock prices are finalized by independent reporters on the **Pantado Price Chain**, an Avalanche L1, and delivered to the C-Chain over **Avalanche ICM**. US stocks come from an on-chain reference market; tokens from Avalanche mainnet. |
+| **Assets** | 25 HOSE stocks · 25 tokenized US stocks · 35 Avalanche tokens |
+| **Tested** | 113 Foundry tests · 174 TypeScript service tests · 178 web tests · browser smoke on every page |
+| **Status** | This version runs end to end on a local Avalanche network (L1 + C-Chain). The earlier version (an index vault you bought into) is live on Fuji; see [v1 on Fuji](#v1-on-fuji). |
 
-**Contents:** [Why](#why) · [What it does](#what-pantado-does) · [Features](#features) ·
-[Stock data](#stock-data-pharaoh-ready) · [Avalanche](#how-pantado-uses-avalanche) · [How it works](#how-it-works) · [Contracts](#contracts-on-avalanche-fuji-chain-43113) · [On-chain proof](#on-chain-proof-fuji) ·
-[Tested](#tested) · [Roadmap](#roadmap) · [Run it](#run-it-locally)
+**Contents:** [Why](#why) · [What it does](#what-pantado-does) · [Features](#features) · [Indexes as data](#indexes-as-data) ·
+[Pantado Price Chain](#pantado-price-chain) · [Stock data](#stock-data) · [Avalanche](#how-pantado-uses-avalanche) ·
+[How it works](#how-it-works) · [Tested](#tested) · [Roadmap](#roadmap) · [Run it](#run-it-locally) · [v1 on Fuji](#v1-on-fuji)
 
 ## Why
 
-Real-world assets are moving on-chain, but owning a *theme* is still a chore. To hold "AI chips + Bitcoin" you pick the assets, size the weights, sign one swap and one approval per asset, and then rebalance by hand forever. The data you need is scattered across chains and dashboards. Index products exist, but they are built by institutions, not by the people who have the idea.
+Real-world assets are moving on-chain, but following a *theme* ("AI chips + Bitcoin", "Vietnam leaders") still means
+picking assets, sizing weights and stitching data from many chains and exchanges by hand. Index providers decide which
+indexes exist, and their data is closed. Vietnamese stocks, among the most traded in Southeast Asia, have no on-chain
+price source at all.
 
-**Pantado turns any market narrative into one token.**
+**Pantado is the Index Layer: anyone can define an index, and every index has a level anyone can verify and build on.**
 
 ## What Pantado does
 
-Pantado lets anyone go from a market idea to owning it, in three steps:
+Pantado works like an index provider with the walls taken down: the methodology is a public contract, the inputs are
+verified on a public chain, and the output is a number any wallet, app or agent can read.
 
-1. **Understand the market.** Ask an AI agent about any stock or token and get answers built on live on-chain data, not guesses. Every number is pulled from a tool call and checked before you see it.
-2. **Turn the idea into an index.** Describe a theme like "AI chips + Bitcoin" and the agent drafts the basket: assets, weights, a backtest and the risks. Tune it, publish it, and earn 0.20% every time someone trades it.
-3. **Own the whole basket as one token.** One USDC payment buys every asset in a single transaction and gives you one ERC-20 backed by the real assets in its vault. Exit any time: sell for USDC, or redeem for the assets themselves, free.
-
-No institution in between, no swap-by-swap execution, no manual rebalancing.
-
-Index tokens have open supply: minted when you buy, burned when you exit, and always priced at the value of the vault. They never sell out.
+1. **Understand the market.** Ask an AI agent about any listed stock, Vietnamese stock, token or index. Every number
+   comes from a tool call on live data and is checked before you see it.
+2. **Define an index.** Describe a theme and the agent drafts the basket: assets, weights, a 90-day backtest and the
+   risks. Tune it in Create and sign once. It costs only the network fee: nothing is deposited, bought or held.
+3. **Use the data.** The level starts at 100 and follows the prices. Compare your indexes against AVAX in Workspace,
+   read any index through the API or straight from `IndexRegistry.levelOf()`, and see where every price came from on
+   the Network page.
 
 ## Features
 
 | | |
 |---|---|
-| **Ask** | Live price, 24h / 7d / 30d change, range, volatility, drawdown, volume. Auto or Deep mode. Research, not investment advice. |
-| **Build** | AI-drafted index with weights, backtest vs AVAX and main risks; **View** opens it in Create. |
-| **Create & publish** | 2–20 tokenized stocks and Avalanche tokens, presets (Equal / Market cap / Low volatility), 90-day backtest, rebalancing Off / Manual / Auto. 5 USDC to publish. |
-| **Buy & exit** | One transaction, all or nothing. Sell for USDC or redeem in kind: always open, fee-free, can't be paused. |
-| **Portfolio** | Positions, PnL, drift, creator earnings, rebalance history. |
-| **Sign in** | Google, X, email or passkey with an embedded wallet and test funds, or Core / MetaMask. |
+| **Market** | Indexes, US stocks, Vietnamese stocks (in ₫) and tokens with 24h / 7d / 30d change and volume; top movers per type; watchlist. |
+| **Chart pages** | One page per index, stock, Vietnamese stock and token: candles, composition and price sources, rebalance history, and a "Use this data" card (REST, level history, on-chain read). |
+| **Create** | 2–20 assets, presets (Equal / Market cap / Low volatility), 90-day backtest vs AVAX, rebalancing Off / Manual / Auto, public or private. One signature, network fee only. Edit the basket of your index later. |
+| **Workspace** | Your indexes, your watchlist or all public ones, rebased to 100: return, vs AVAX, volatility, max drawdown, rebalance status. |
+| **Network** | The Price Chain live: reporters, rounds finalized on the L1, ICM delivery time, prices on the C-Chain. |
+| **Ask PantadoAI** | The robot button on every page. Auto (fast) or Deep (multi-step) mode; tickers in answers open their page; "Create from this" opens a drafted index. Research, not investment advice; it never signs transactions. |
+| **Sign in** | Google, X, email or passkey (embedded wallet), or Core / MetaMask. |
 
-**Marketplace:** 35 Avalanche tokens, 25 tokenized stocks and 10+ community indexes.
+## Indexes as data
 
-## Stock data: Pharaoh-ready
+`IndexRegistry` (Avalanche C-Chain) holds every index as a definition, not a vault:
 
-> **Pantado is built for Avalanche-native tokenized stocks.** Permissionless tokenized-stock pools on Avalanche are
-> coming with **Pharaoh** but are not live yet. Until they are, this demo prices its tokenized stocks from a
-> **temporary on-chain reference market: Robinhood Chain**, read-only. That is why a stock's page and the agent's
-> answers name it as the reference market.
->
-> - Token prices, history and volume come from Avalanche mainnet; only the stock data uses the stand-in.
-> - On Fuji, stocks trade as test pTokens priced from that reference; nothing on Fuji has real value.
-> - When the Avalanche stock pools launch, they replace the stand-in. Each stock's data source is set per asset in
->   `config/assets.json`; the switch needs no change to the index contracts.
+- **Create.** Anyone with a wallet defines a basket (listed assets, weights, public or private). Its weights become
+  fixed units per asset at the current prices, so the level starts at **100**. Cost: the network fee. Spam bounds:
+  unique tickers and 20 public indexes per wallet.
+- **Level.** `level = Σ units × price`, from the same oracle the Price Chain feeds; `levelOf(index)` reads it on-chain.
+- **Rebalance.** Every change re-derives the units at the current level, so the level never jumps, and nothing is traded.
+  - *Manual:* the creator publishes a new basket (assets and weights), now or after a notice of up to 30 days, at most once a day.
+  - *Auto:* back to target weights when an asset drifts past its trigger (10–200 %) or every 30 days.
+  - *Drops:* an asset that is delisted, or has no price for 7 days, leaves at its last price; its weight goes pro rata to the rest.
+- **Anyone applies what is due.** One permissionless `poke(index)` drops, applies a scheduled basket or runs an Auto
+  rebalance when `due(index)` says so; the rebalance keeper does it each minute, but no one has to trust it.
+
+## Pantado Price Chain
+
+Vietnamese stocks trade off-chain on HOSE. To make their prices verifiable, Pantado runs its own **Avalanche L1**
+(Subnet-EVM, gas token PPC) where independent reporters submit prices:
+
+```
+ Reporters (read HOSE + VND rate) ──submit──▶ PriceReports (L1) ──median when 2 of 3 agree──▶ Avalanche ICM
+                                                                                                   │
+ Index levels ◀── PriceOracle (C-Chain) ◀── market-data ◀── PriceChainReceiver (C-Chain) ◀────────┘
+```
+
+- A round every 60 s; the median of each asset is final once the threshold of reporters has submitted.
+- ICM delivers the final round to the C-Chain, typically within a second or two; the receiver accepts only the L1's
+  contract and keeps the newest round.
+- market-data takes the receiver's price as canonical and cross-checks it against its own direct read.
+- The Network page shows every round, every reporter's gap from the median, and L1 vs C-Chain prices.
+
+Today the team runs the validators and the 3 reporters; the plan is to hand both to independent operators
+(see [Roadmap](#roadmap)).
+
+## Stock data
+
+| Market | Source | Shown as |
+|---|---|---|
+| Vietnamese stocks (25 HOSE) | HOSE matched trades, VND converted at the Vietcombank rate, finalized on the Pantado Price Chain | "Reference market: HOSE (off-chain)", prices in ₫ |
+| US stocks (25) | Temporary on-chain reference market on Robinhood Chain, read-only, until permissionless stock pools launch on Avalanche (Pharaoh; not live yet) | "Reference market: Robinhood Chain (on-chain)" |
+| Avalanche tokens (35) | Avalanche C-Chain mainnet pools, read-only | "Avalanche (on-chain)" |
+
+Each asset's source is set in `config/assets.json`; switching a source needs no contract change. HOSE trades on
+weekdays (09:00–11:30, 13:00–15:00 Vietnam time); outside those hours the last close is the current price.
 
 ## How Pantado uses Avalanche
 
-| Avalanche piece | How Pantado uses it | Check it |
-|---|---|---|
-| **C-Chain (Fuji)** | 11 contracts run the product: factory, one ERC-20 vault per index, oracle, router, rebalancer, fee splitter, venues | [Contracts on Fuji](#contracts-on-avalanche-fuji-chain-43113): source verified on Snowtrace |
-| **Avalanche mainnet data** | Prices, 24h / 7d / 30d history and volume for the 35 Avalanche tokens are read from Avalanche C-Chain mainnet (read-only) | Ask the agent about AVAX, BTC.b or JOE at [pantado.xyz](https://pantado.xyz) |
-| **Avalanche DEX liquidity** | `DexVenue` routes buys and sells through constant-product pools on Avalanche C-Chain mainnet; every configured route is tested on a mainnet fork (quote = swap, both ways), plus the production deploy and an index's whole life with real USDC | `AVALANCHE_FORK_RPC=… forge test --match-path "test/fork/*"` |
-| **Tokenized stocks on Avalanche** | Built for Avalanche-native stock pools (Pharaoh). Each asset's data source and venue are set per asset in `config/assets.json`; switching needs no contract change | [Stock data: Pharaoh-ready](#stock-data-pharaoh-ready) |
-| **Core wallet** | Sign in with Core (or MetaMask), or with Google / X / email / passkey through an embedded wallet | [pantado.xyz](https://pantado.xyz) |
+| Avalanche piece | How Pantado uses it |
+|---|---|
+| **Avalanche L1** | The Pantado Price Chain: reporters submit prices, `PriceReports` finalizes the median per round |
+| **Avalanche ICM (Teleporter)** | Delivers each final round from the L1 to the C-Chain `PriceChainReceiver` |
+| **C-Chain** | `IndexRegistry` (indexes as data), `PriceOracle`, `AssetRegistry`; levels readable on-chain |
+| **Avalanche mainnet data** | Prices, history and volume of 35 Avalanche tokens (read-only) |
+| **Core wallet** | Sign in with Core (or MetaMask), or an embedded wallet |
 
 ## How it works
 
 ```
- App & login     Next.js web app · Privy (Google, X, email, passkey) · Core / MetaMask
+ Web app         Next.js · top bar (Market, Create, Workspace, Network) · Ask robot widget · Privy / Core / MetaMask
       │
- AI agent        Claude Haiku (Auto) / Sonnet (Deep) · tools: prices, history, backtest, quotes, drafts
-      │          · number check against tool data · daily on-topic suggestions
+ AI agent        Claude Haiku (Auto) / Sonnet (Deep) · read-only tools: prices, history, compare, backtest,
+      │          index lookup, drafts · numbers checked against tool data · no trading tools
       │
- Data & services Market data (Avalanche + Robinhood Chain mainnets, read-only) · Indexer (Ponder + Postgres)
-      │          · API (Fastify) · keepers: price pusher, rebalance trigger, auction filler, auto-fund, monitor
+ Data & services market-data (Avalanche + reference markets + HOSE) · Indexer (Ponder) · API (Fastify)
+      │          · keepers: price reporters (L1), price pusher, rebalance trigger (poke)
       │
- Contracts       IndexFactory · IndexVault (ERC-20 per index) · PriceOracle · SwapRouter · Rebalancer
-                 · FeeSplitter · venues (Fuji test venues; DexVenue for mainnet, fork-tested)
+ Contracts       L1: PriceReports · C-Chain: PriceChainReceiver · PriceOracle · AssetRegistry · IndexRegistry
 ```
 
-**Safety by design**
+- One canonical price per asset; a stale price blocks creating or rebalancing an index, never reading its level.
+- The indexer's level equals `IndexRegistry.levelOf()` at the same prices; every page shows where a price came from.
+- The agent never signs user transactions.
 
-- Buy mints pro rata to the current basket; sell is pro rata; redeem in kind is always open.
-- One canonical price per asset; a stale price pauses buys, sells and auctions, never redeem.
-- Rebalances run under notice, a daily cap, a loss budget and a maximum duration, including agent-managed indexes.
-- The agent never signs user transactions. Its own manager wallet acts only on its own indexes, through the same guards.
+## Tested
 
-## Fees
-
-| Fee | Value |
+| Suite | Result |
 |---|---|
-| Index buy / sell | 0.50% (0.30% protocol, 0.20% creator) |
-| Index creation | 5 USDC |
-| Single-asset swap | 0.10% |
-| Redeem in kind | free |
+| Contracts (Foundry: IndexRegistry 16, Price Chain 7, oracle, config, legacy v1 incl. invariants) | 113 passed, 2 skipped (mainnet fork) |
+| TypeScript services: shared 44 · sdk 6 · api 29 · agent 31 · market-data 46 · indexer 1 · scripts 9 · rebalance trigger 5 · price reporter 3 | 174 passed |
+| Web (view models, parsers, formatting) | 178 passed |
+| Browser (Playwright, local stack) | every page at desktop and phone width: no JS errors, no horizontal overflow; create an index with one signature, no USDC moved, private → public |
+| On the local stack | a scheduled basket applied by the keeper after its notice; a delisted asset dropped (level 100 → 99.98) |
 
-## Contracts on Avalanche Fuji (chain 43113)
+## Roadmap
+
+- **Done:** Price Chain L1 with ICM delivery (local) · indexes as data with Manual / Auto / scheduled rebalancing and
+  drops · 25 Vietnamese stocks · new web app (Market, Create, Workspace, Network, Ask widget) · no-trading agent.
+- **Next:** Price Chain and `IndexRegistry` on Fuji · independent reporters with their own data sources · partner
+  validators for the L1 · listing and delisting by validator vote · the full HOSE list.
+- **Later:** open API and SDK for builders · verified creators · more exchanges.
+
+## Run it locally
+
+1. Install Foundry, Node 20+, pnpm, Docker and the Avalanche CLI.
+2. `cp .env.example .env` and fill what you need (see `OPEN_QUESTIONS.md` › Needs input).
+3. `pnpm install && pnpm gen:config`
+4. Price Chain (optional, for Vietnamese stocks through the L1):
+   - create and run the L1: `avalanche blockchain create pantadoprice` (Subnet-EVM, chain 55177, ICM on), then
+     `avalanche blockchain deploy pantadoprice --local`
+   - `PRICECHAIN_L1_RPC=… PRICECHAIN_DEPLOYER_KEY=… scripts/pricechain-deploy-local.sh`
+   - reporters: `cd keepers/price-reporter && set -a && . ../../.env.pricechain.local && set +a && PRICECHAIN_L1_RPC=… pnpm start`
+5. Everything else on a local chain:
+   `PRICECHAIN_NETWORK=local PRICECHAIN_L1_RPC=… STACK_PRICES=live STACK_KEEPERS=1 WEB_PORT=4002 pnpm --filter @pantado/e2e-app stack:anvil`
+   → http://localhost:4002 (drop the two `PRICECHAIN_*` variables to read HOSE directly).
+
+### Commands
+
+| What | Command |
+|---|---|
+| All TS tests (Anvil tests need Foundry) | `pnpm -r test` |
+| Contracts | `cd contracts && forge build && forge test` |
+| Generated config is up to date | `pnpm gen:config:check` |
+| Full local stack (Anvil, indexer, api, keepers, web) | `pnpm --filter @pantado/e2e-app stack:anvil` |
+| Seed demo indexes | `pnpm --filter @pantado/scripts seed-demo` |
+| App e2e on Anvil (Playwright) | `pnpm --filter @pantado/e2e-app e2e:anvil` |
+| Ask evaluation against a live API | `pnpm --filter @pantado/agent eval` |
+| Web dev server | `pnpm --filter @pantado/web dev` → http://localhost:4002 |
+
+## Repository
+
+`contracts/` (Foundry, solc 0.8.26, OpenZeppelin 5; `src/core/IndexRegistry.sol`, `src/pricechain/`) ·
+`packages/shared` (config, schemas, contract math, HOSE client) · `packages/sdk` (ABIs, reads, tx builders) ·
+`packages/service-kit` · `keepers/*` (price reporter, price pusher, rebalance trigger, …) ·
+`services/{indexer,market-data,api,agent}` · `apps/web` (Next.js; screens in `src/ui/`) · `infra/` · `scripts/` ·
+`test/e2e-app`.
+
+Design documents: `spec.md` · `STRUCTURE.md` · `OPEN_QUESTIONS.md` (decisions; B98–B103 cover this version) ·
+`CLAUDE.md` · `apps/web/reference/index-layer/` (approved UI).
+
+## v1 on Fuji
+
+The first version of Pantado sold indexes as vault tokens: one USDC payment bought every asset into an ERC-20 vault,
+with sell, free redeem in kind and Dutch-auction rebalancing. It is live on Fuji (11 contracts, source-verified) and
+stays there as a record; this version replaces buying with indexes as data.
+
+<details>
+<summary>v1 contracts and on-chain proof (Fuji, chain 43113)</summary>
 
 | Contract | Address |
 |---|---|
@@ -135,11 +226,6 @@ Index tokens have open supply: minted when you buy, burned when you exit, and al
 | Stock venue | [`0xD6ed8fbcEe091642FDC97d5F1fF9A663fF5D5f63`](https://testnet.snowtrace.io/address/0xD6ed8fbcEe091642FDC97d5F1fF9A663fF5D5f63) |
 | Token venue | [`0xDe9D072Db625FeC54500199Ac07e75D5Fc4F9b8F`](https://testnet.snowtrace.io/address/0xDe9D072Db625FeC54500199Ac07e75D5Fc4F9b8F) |
 | Test USDC | [`0xd42405859FEaF57f75F433CFC62A425d6187e4f6`](https://testnet.snowtrace.io/address/0xd42405859FEaF57f75F433CFC62A425d6187e4f6) |
-
-All 60 test asset tokens are listed in `contracts/deployments/fuji.json`. Assets on Fuji are test tokens priced
-from the mainnet reference markets; nothing on Fuji has real value.
-
-## On-chain proof (Fuji)
 
 Read from Fuji event logs and `IndexFactory.indexCount()` on 2026-11-21 (from block 61165284).
 
@@ -191,67 +277,7 @@ Read from Fuji event logs and `IndexFactory.indexCount()` on 2026-11-21 (from bl
 Before the price pusher refreshed the oracle, the same sell reverted with `PriceStale` while redeem still succeeded:
 stale prices block buy and sell, never redeem.
 
-## Tested
-
-| Suite | Result |
-|---|---|
-| Contracts (Foundry, incl. invariants) | 90 passed (+2 mainnet-fork tests, run with `AVALANCHE_FORK_RPC`) |
-| Mainnet fork | 30 DexVenue routes: quote = swap; production deploy → create, buy, sell, redeem |
-| TypeScript (shared, sdk, service-kit, api, agent, market-data, keepers, scripts) | 179 passed |
-| Web (vitest) | 127 passed |
-| End to end (Playwright, local chain) | 7 / 7 |
-
-TypeScript ports of the contract math are golden-tested against Foundry fixtures; the index level from the indexer
-equals `IndexLens` at the same block.
-
-## Roadmap
-
-- **Done:** product UI · 11 contracts live on Fuji · AI agent · mainnet price data · DEX venue tested on a mainnet fork.
-- **Next:** mainnet beta, completed once Pharaoh's permissionless stock pools launch on Avalanche (not live yet;
-  until then stock data uses the temporary reference market, see [Stock data: Pharaoh-ready](#stock-data-pharaoh-ready)).
-- **Later:** meme-token indexes on Avalanche · open API for outside agents · verified creators.
-
-## Run it locally
-
-1. Install Foundry, Node 20+, pnpm and Docker.
-2. `cp .env.example .env` and fill what you need (see `OPEN_QUESTIONS.md` › Needs input).
-3. `pnpm install && pnpm gen:config`
-4. Local chain with everything: `STACK_PRICES=live STACK_KEEPERS=1 WEB_PORT=4002 pnpm --filter @pantado/e2e-app stack:anvil`
-   → http://localhost:4002
-
-Against Fuji with Docker: `infra/docker-compose.contest.yml` + `infra/docker-compose.fuji-local.yml` (see their
-headers); public deploy: `infra/contest.md`.
-
-### Commands
-
-| What | Command |
-|---|---|
-| All TS tests (Anvil tests need Foundry) | `pnpm -r test` |
-| Contracts | `cd contracts && forge build && forge test` |
-| Generated config is up to date | `pnpm gen:config:check` |
-| End-to-end contract demo on Anvil | `contracts/script/anvil-demo.sh` |
-| Full local stack (Anvil, indexer, api, web) | `pnpm --filter @pantado/e2e-app stack:anvil` |
-| App e2e on Anvil (Playwright) | `pnpm --filter @pantado/e2e-app e2e:anvil` |
-| Level check (indexer vs IndexLens) | `INDEXER_URL=… pnpm --filter @pantado/scripts check-level` |
-| Seed demo indexes | `pnpm --filter @pantado/scripts seed-demo` |
-| Refresh seed prices / bands from the live market | `MARKET_DATA_URL=… pnpm --filter @pantado/scripts refresh:seeds [--check]` |
-| Acceptance (spec §14) | `pnpm --filter @pantado/e2e-app acceptance` (see `test/e2e-app/README.md`) |
-| Deploy to Fuji (one command) | `pnpm --filter @pantado/scripts deploy:fuji` (`--check` for a dry preflight) |
-| Ship to a server | `VPS=user@host infra/deploy-vps.sh [--bootstrap]` |
-| Acceptance on Fuji | `VPS=user@host infra/acceptance-fuji.sh` |
-| Web dev server | `pnpm --filter @pantado/web dev` → http://localhost:4002 |
-| Demo screenshots / video scenes | `pnpm --filter @pantado/e2e-app exec tsx demo/shots.ts <dir>` · `… demo/video.ts <dir>` |
-
-## Repository
-
-`contracts/` (Foundry, solc 0.8.26, OpenZeppelin 5) · `packages/shared` (config, schemas, contract math port) ·
-`packages/sdk` (ABIs, reads, tx builders) · `packages/service-kit` (health, metrics, keys) · `keepers/*` ·
-`services/{indexer,market-data,api,agent}` · `apps/web` (Next.js) · `infra/` (compose, Caddy, Prometheus, Grafana) ·
-`scripts/` · `test/e2e-app`.
-
-Design documents: `spec.md` (what the product does) · `STRUCTURE.md` (where everything lives, build phases) ·
-`OPEN_QUESTIONS.md` (inputs, defaults, verified addresses, decisions) · `CLAUDE.md` (build rules) ·
-`apps/web/reference/pantado-app.html` (approved UI).
+</details>
 
 ## Team
 

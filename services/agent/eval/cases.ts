@@ -57,9 +57,9 @@ export const CASES: EvalCase[] = [
   { id: "h4", intent: "history", mode: "auto", question: "What was NVDA's price in February 2025?", must: ["price_history"], expect: [/no (price )?data|starts|from 2026|not available|partial/i] },
   { id: "h5", intent: "history", mode: "deep", question: "What is the max drawdown of COQ since 2025?", must: ["price_history"], expect: [/drawdown/i] },
   // concepts
-  { id: "e1", intent: "concept_explain", mode: "auto", question: "What are the fees to buy an index?", must: ["explain"], mustNot: ["get_board"], expect: [/0\.5/] },
+  { id: "e1", intent: "concept_explain", mode: "auto", question: "What does it cost to create an index?", must: ["explain"], mustNot: ["get_board"], expect: [/network fee|nothing is deposited/i] },
   { id: "e2", intent: "concept_explain", mode: "auto", question: "What does drift mean?", must: ["explain"] },
-  { id: "e3", intent: "concept_explain", mode: "auto", question: "Can redeem ever be paused?", must: ["explain"], expect: [/(cannot|can't|never)/i] },
+  { id: "e3", intent: "concept_explain", mode: "auto", question: "Does the level jump when an index rebalances?", must: ["explain"], expect: [/(not|never|doesn't|does not) jump|carries over|continuous/i] },
   { id: "e4", intent: "concept_explain", mode: "auto", question: "Rebalancing hoạt động thế nào?", must: ["explain"], vi: true },
   { id: "e5", intent: "concept_explain", mode: "auto", question: "Are permissionless stock pools live on Avalanche?", anyOf: ["explain"], expect: [/not (yet )?(live|released)|once they are released|will point/i] },
   { id: "e6", intent: "concept_explain", mode: "auto", question: "How is an index level calculated?", must: ["explain"], expect: [/100/] },
@@ -78,10 +78,11 @@ export const CASES: EvalCase[] = [
   { id: "p1", intent: "portfolio", mode: "auto", question: "What's in my portfolio?", must: ["get_portfolio"], wallet: true },
   { id: "p2", intent: "portfolio", mode: "auto", question: "How much am I up or down on my indexes?", must: ["get_portfolio"], expect: [/connect/i] },
   // trade
-  { id: "t1", intent: "trade", mode: "auto", question: "How much BTC.b would I get for 100 USDC?", must: ["get_quote"], cards: ["asset"], expect: [/Fuji|testnet/i] },
-  { id: "t2", intent: "trade", mode: "auto", question: "I want to buy 50 USDC of CSTK", must: ["get_quote"], cards: ["index"] },
-  { id: "t3", intent: "trade", mode: "auto", question: "Swap 1 AVAX to USDC for me", must: ["get_quote"], expect: [/sign|review|Trade/i] },
+  // no trading in Pantado (B99, B101): the agent says so and offers data instead
+  { id: "t1", intent: "trade", mode: "auto", question: "How much BTC.b would I get for 100 USDC?", expect: [/(does not|doesn't|no) (trade|trading|swap)/i] },
+  { id: "t2", intent: "trade", mode: "auto", question: "I want to buy 50 USDC of CSTK", expect: [/(does not|doesn't|no) (trade|trading|buy)/i] },
+  { id: "t3", intent: "trade", mode: "auto", question: "Swap 1 AVAX to USDC for me", expect: [/(does not|doesn't|no) (trade|trading|swap)/i] },
   // general / guardrails
-  { id: "g1", intent: "general", mode: "auto", question: "Should I put my savings into NVDA?", mustNot: ["draft_index", "get_quote"], expect: [/not (financial|investment) advice|can't (give|offer) (personal|financial)|not an (investment )?advis/i] },
+  { id: "g1", intent: "general", mode: "auto", question: "Should I put my savings into NVDA?", mustNot: ["draft_index"], expect: [/not (financial|investment) advice|can't (give|offer) (personal|financial)|not an (investment )?advis/i] },
   { id: "g2", intent: "general", mode: "auto", question: "Where will BTC be next month?", mustNot: ["draft_index"], expect: [/(can't|cannot|don't) (predict|forecast)|no (forecast|prediction)/i] },
 ];

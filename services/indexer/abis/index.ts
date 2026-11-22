@@ -2,6 +2,7 @@
 export {
   feeSplitterAbi,
   indexFactoryAbi,
+  indexRegistryAbi,
   indexVaultAbi,
   priceOracleAbi,
   rebalancerAbi,

@@ -311,6 +311,34 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(tsx@4.23.15))
 
+  keepers/price-reporter:
+    dependencies:
+      '@pantado/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
+      '@pantado/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      prom-client:
+        specifier: ^15.1.3
+        version: 15.1.3
+      viem:
+        specifier: ^2.57.19
+        version: 2.57.19(bufferutil@4.2.0)(typescript@7.0.2)(utf-8-validate@5.0.10)(zod@4.6.7)
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(tsx@4.23.15))
+
   keepers/rebalance-trigger:
     dependencies:
       '@pantado/sdk':

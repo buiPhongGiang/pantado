@@ -10,6 +10,8 @@ import { profileSchema, type Profile } from "./schemas/network.js";
 import { paramsSchema, type Params } from "./schemas/params.js";
 import { servicesSchema, type Services } from "./schemas/services.js";
 import { deploymentSchema, type Deployment } from "./schemas/deployments.js";
+import { vnMarketFileSchema, type VnMarketFile } from "./schemas/vn-market.js";
+import { priceChainDeploymentSchema, priceChainFileSchema, type PriceChainDeployment, type PriceChainFile } from "./schemas/pricechain.js";
 
 /** Repo root: `PANTADO_ROOT`, else the nearest ancestor holding `pnpm-workspace.yaml`. */
 export function findRepoRoot(start: string = dirname(fileURLToPath(import.meta.url))): string {
@@ -60,6 +62,19 @@ export const loadAssetsFile = (opts: LoadOptions = {}): AssetsFile =>
   loadJsonFile(assetsFileSchema, "config/assets.json", opts);
 
 export const loadAssets = (opts: LoadOptions = {}): Asset[] => loadAssetsFile(opts).assets;
+
+/** `config/pricechain.json` and, when deployed, `contracts/deployments/pricechain-<network>.json` (else null). */
+export function loadPriceChain(network: string, opts: LoadOptions = {}): { cfg: PriceChainFile; deployment: PriceChainDeployment | null } {
+  const cfg = loadJsonFile(priceChainFileSchema, "config/pricechain.json", opts);
+  const rel = `contracts/deployments/pricechain-${network}.json`;
+  const deployment = existsSync(resolvePath(rel, opts)) ? loadJsonFile(priceChainDeploymentSchema, rel, opts) : null;
+  return { cfg, deployment };
+}
+
+/** `config/vn-market.json` (Vietnamese stock source), or null when the file is absent. */
+export function loadVnMarket(opts: LoadOptions = {}): VnMarketFile | null {
+  return existsSync(resolvePath("config/vn-market.json", opts)) ? loadJsonFile(vnMarketFileSchema, "config/vn-market.json", opts) : null;
+}
 
 /** Active profile: argument, else `PANTADO_PROFILE`, else `contest`. */
 export function profileName(name?: string): ProfileName {

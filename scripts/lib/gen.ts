@@ -148,6 +148,8 @@ export function indexerWhitelists(assets: Asset[], contest: Profile): IndexerWhi
   for (const a of assets) {
     if (a.kind === "stock") {
       const d = a.display;
+      // Vietnamese stocks are priced off-chain (HOSE): nothing for the indexer to whitelist on a data chain
+      if (d.chain === "hose") continue;
       if (d.confirmed && isAddress(d.token) && isAddress(d.referencePool))
         stocks.push({ id: a.id, symbol: a.symbol, token: d.token, referencePool: d.referencePool });
       else pendingRh.push(a.id);
@@ -177,7 +179,7 @@ export function indexerWhitelists(assets: Asset[], contest: Profile): IndexerWhi
 export function appAsset(a: Asset): AppAsset {
   const confirmedAddr =
     a.kind === "stock"
-      ? a.display.confirmed && isAddress(a.display.token)
+      ? a.display.chain === "robinhood" && a.display.confirmed && isAddress(a.display.token)
         ? a.display.token
         : null
       : a.display.confirmed && isAddress(a.display.address)

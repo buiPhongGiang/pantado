@@ -57,4 +57,20 @@ describe("versionVM", () => {
     expect(v.whenText).toBe("in 48h");
     expect(v.whens.find((x) => x.on === "true")?.label).toBe("7 days");
   });
+
+  it("data index: any mode, Now or a notice, basket assets sent with the weights", () => {
+    let sent: [number[], string[]] | null = null;
+    const d = detail({ model: "data", mode: 2, rebalance: { mode: 2, driftBps: 5000, intervalSec: 2_592_000, rebalancedAt: NOW - 86_400, pending: null, due: "None" } });
+    expect(blocker(d, me.address)).toBeNull();
+    const w = { [NVDA.toLowerCase()]: 70, [AVAX.toLowerCase()]: 30 };
+    const h = { setWeight: () => undefined, setWhen: () => undefined, schedule: (b: number[], a: string[]) => (sent = [b, a]) };
+    const v = versionVM(input({ detail: d }), st({ w, reason: "Tilt to NVDA", when: "Now" }), h);
+    expect(v.whens.map((x) => x.label)).toEqual(["Now", "48h", "72h", "7 days"]);
+    expect(v.cta.label).toBe("Publish version 2 now");
+    expect(v.whenText).toBe("now");
+    v.schedule();
+    expect(sent).toEqual([[7000, 3000], [NVDA.toLowerCase(), AVAX.toLowerCase()]]);
+    expect(versionVM(input({ detail: d }), st({ w, reason: "x", when: "72h" }), h).cta.label).toBe("Schedule version 2");
+    expect(versionVM(input({ detail: d }), st({ w }), h).cta.label).toBe("Add a reason");
+  });
 });

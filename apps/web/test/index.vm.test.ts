@@ -177,3 +177,26 @@ describe("Ask agent from an index page (B96)", () => {
     expect(askHref(q, "Auto")).toBe(`/ask?q=${encodeURIComponent(q)}&mode=auto`);
   });
 });
+
+describe("data index rebalance card", () => {
+  const noopH = { setTab: () => undefined, setSide: () => undefined, setAmt: () => undefined, trade: () => undefined, ask: () => undefined } as unknown as Parameters<typeof indexVM>[2];
+  const rb = (over: object) => ({ mode: 2, driftBps: 5000, intervalSec: 2_592_000, rebalancedAt: NOW - 10 * 86_400, pending: null, due: "None" as const, ...over });
+  it("Auto shows the drift against its trigger and the time to the next one", () => {
+    const v = indexVM(input({ detail: detail({ model: "data", mode: 2, rebalance: rb({}) }), comp: { ...comp(), maxDriftBps: 2500 } }), st(), noopH);
+    expect(v.plan?.title).toBe("Auto rebalance");
+    expect(v.plan?.guards[0]).toMatchObject({ label: "Largest drift", val: "25%", max: "/ ±50% trigger", w: "50%" });
+    expect(v.plan?.pill).toBe("By 20d");
+    expect(indexVM(input({ detail: detail({ model: "data", mode: 2, rebalance: rb({ due: "Auto" }) }) }), st(), noopH).plan?.pill).toBe("Due now");
+  });
+  it("a scheduled basket shows what changes and when", () => {
+    const pending = { assets: [AVAX], weightsBps: [10_000], reason: "All in AVAX", at: NOW + 2 * 86_400 };
+    const v = indexVM(input({ detail: detail({ model: "data", mode: 1, rebalance: rb({ mode: 1, pending }) }) }), st(), noopH);
+    expect(v.plan?.title).toBe("Version 2 · scheduled");
+    expect(v.plan?.sub).toContain("All in AVAX. New basket: AVAX 100%");
+    expect(v.plan?.pill).toBe("Starts in 48h");
+  });
+  it("Manual without a schedule shows no card", () => {
+    expect(indexVM(input({ detail: detail({ model: "data", mode: 1, rebalance: rb({ mode: 1 }) }) }), st(), noopH).plan).toBeNull();
+  });
+});
+

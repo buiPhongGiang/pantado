@@ -11,6 +11,8 @@ import { poolOrder, type PoolRef, type RpcSwapReader } from "./sources/rpc-swaps
 import type { Obs } from "./engine/stats.js";
 import type { StockApi } from "./sources/stock-api.js";
 import type { HistoryJob } from "./history-scan.js";
+import type { VnMarket } from "@pantado/shared";
+import type { PriceChainReader } from "./sources/pricechain.js";
 
 export interface PriceSink {
   publish(prices: CanonicalPrice[]): Promise<void>;
@@ -24,6 +26,10 @@ export interface MarketDataDeps {
   avalanche: RpcSwapReader | null;
   robinhood: RpcSwapReader | null;
   stockApi: StockApi | null;
+  /** Vietnamese stocks (display.chain "hose"); null when off or in seed mode */
+  vn?: VnMarket | null;
+  /** Pantado Price Chain receiver on the C-Chain: canonical for Vietnamese stocks when set (the direct read cross-checks) */
+  priceChain?: PriceChainReader | null;
   sink: PriceSink | null;
   log: Logger;
   registry: Registry;
@@ -101,6 +107,7 @@ export class MarketData {
     for (const a of assets) {
       if (a.kind !== "stock" || !quote?.confirmed) continue;
       const disp = a.display;
+      if (disp.chain !== "robinhood") continue;
       if (!disp.confirmed || !disp.dex || disp.referencePool === "TODO" || disp.token === "TODO") continue;
       const [t0, t1] = poolOrder(disp.token, quote.address);
       const stockIs0 = t0.toLowerCase() === disp.token.toLowerCase();
@@ -230,12 +237,12 @@ export class MarketData {
     const quote = profile.data.robinhood.referenceQuote;
     const windowSec = services.marketData.referenceMaxAgeSec;
     const head = robinhood ? await robinhood.client.getBlockNumber() : null;
-    const stocks = assets.filter((a) => a.kind === "stock");
+    const stocks = assets.filter((a) => a.kind === "stock" && a.display.chain === "robinhood");
     // a few assets at a time: public RPCs rate-limit bursts
     for (let i = 0; i < stocks.length; i += 5) {
       await Promise.all(
         stocks.slice(i, i + 5).map(async (a) => {
-          if (a.kind !== "stock") return;
+          if (a.kind !== "stock" || a.display.chain !== "robinhood") return;
           const api = stockApi ? await this.guard(`stock source ${a.symbol}`, () => stockApi.lastTrade(a.symbol)) : null;
           if (api) cross.set(a.id, api);
           let reference: { pool: string; swaps: Obs[] } | null = null;
@@ -257,6 +264,27 @@ export class MarketData {
     return { canonical, cross };
   }
 
+  /**
+   * Vietnamese stocks. With the Pantado Price Chain configured, the canonical price is the round finalized there by
+   * the reporters (median, delivered over ICM) and the direct HOSE read is the cross-check; without it, the direct
+   * read is canonical and there is no cross-check.
+   */
+  private async vnSide(): Promise<{ canonical: Map<string, EnginePrice>; cross: Map<string, EnginePrice> }> {
+    const direct = new Map<string, EnginePrice>();
+    const vn = this.d.vn;
+    const ids: string[] = [];
+    for (const a of this.d.assets) {
+      if (a.kind !== "stock" || a.display.chain !== "hose") continue;
+      ids.push(a.id);
+      const q = vn?.quote(a.symbol);
+      if (q) direct.set(a.id, { usd: q.usd, ts: q.ts, source: "hose:last-match" });
+    }
+    const pc = this.d.priceChain;
+    if (!pc) return { canonical: direct, cross: new Map() };
+    const chain = (await this.guard("pricechain receiver", () => pc.prices(ids))) ?? new Map<string, EnginePrice>();
+    return { canonical: chain, cross: direct };
+  }
+
   async refresh(): Promise<InternalPrices> {
     const now = this.now();
     try {
@@ -270,8 +298,9 @@ export class MarketData {
           this.guard("avalanche side", () => this.tokenSide()).then((v) => v ?? empty),
           this.guard("robinhood side", () => this.stockSide(now)).then((v) => v ?? empty),
         ]);
-        canonical = new Map([...t.canonical, ...s.canonical]);
-        cross = new Map([...t.cross, ...s.cross]);
+        const v = await this.vnSide();
+        canonical = new Map([...t.canonical, ...s.canonical, ...v.canonical]);
+        cross = new Map([...t.cross, ...s.cross, ...v.cross]);
       }
       const prices = assembleCanonical(this.d.assets, canonical, cross);
       for (const p of prices) {

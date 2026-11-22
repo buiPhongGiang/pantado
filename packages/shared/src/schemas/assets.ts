@@ -22,7 +22,7 @@ const tokenDisplaySchema = z.strictObject({
   source: z.enum(["fixed", "price-engine"]),
 });
 
-const stockDisplaySchema = z.strictObject({
+const robinhoodStockDisplaySchema = z.strictObject({
   chain: z.literal("robinhood"),
   token: addressOrTodoSchema,
   referencePool: addressOrTodoSchema,
@@ -32,6 +32,17 @@ const stockDisplaySchema = z.strictObject({
   source: z.literal("reference-market"),
   badge: z.string().min(1),
 });
+
+/** Vietnamese stock: priced off-chain from HOSE matched trades (config/vn-market.json), no on-chain reference market. */
+const hoseStockDisplaySchema = z.strictObject({
+  chain: z.literal("hose"),
+  source: z.literal("vn-market"),
+  confirmed: z.boolean(),
+  badge: z.string().min(1),
+});
+
+const stockDisplaySchema = z.discriminatedUnion("chain", [robinhoodStockDisplaySchema, hoseStockDisplaySchema]);
+export type StockDisplay = z.infer<typeof stockDisplaySchema>;
 
 /** On a test network the asset is deployed by us ("deploy"). */
 const fujiExecutionSchema = z.strictObject({
@@ -48,7 +59,7 @@ const mainnetExecutionSchema = z.strictObject({
 
 const priceSchema = z
   .strictObject({
-    canonical: z.enum(["fixed", "avalanche-price-engine", "robinhood-reference-twap60"]),
+    canonical: z.enum(["fixed", "avalanche-price-engine", "robinhood-reference-twap60", "hose-last-match"]),
     fixedUsd: decimalStringSchema.optional(),
     crossCheck: z
       .string()

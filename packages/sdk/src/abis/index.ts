@@ -1,5 +1,6 @@
 // GENERATED — do not edit.
 export { indexFactoryAbi } from "./IndexFactory.js";
+export { indexRegistryAbi } from "./IndexRegistry.js";
 export { indexVaultAbi } from "./IndexVault.js";
 export { indexLensAbi } from "./IndexLens.js";
 export { assetRegistryAbi } from "./AssetRegistry.js";

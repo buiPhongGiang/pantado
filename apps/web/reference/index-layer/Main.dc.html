@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Market</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#060607}
+a{color:#F2F2F3;text-decoration:none}a:hover{color:#F2F2F3}
+button{font-family:inherit;cursor:pointer}
+input::placeholder{color:#8E8E96}
+.mrow:hover{background:#141417}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #B18CFB;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+<div style="max-width: 1420px; margin: 0 auto; background: #0B0B0D; border: 1px solid #1A1A1D; border-radius: 18px; overflow: hidden">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 14px 16px; border-bottom: 1px solid #17171A">
+    <a href="Main.dc.html" aria-label="Pantado home" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #17171A; border: 1px solid #1F1F23; display: grid; place-items: center">
+        <svg width="24" height="18" viewBox="10 14 324 241" aria-hidden="true"><path d="M94 16H238C291 16 331 60 331 113C331 166 291 206 240 206H213L219 200C247 195 267 176 267 153C267 126 247 104 221 104H94Z" fill="#F4F2FA"></path><path d="M137 146V252H12V214C12 176 42 146 80 146Z" fill="#9052F9"></path></svg>
+      </span>
+      <img src="/_blob/33071f8508580726c9aadb20187ee8f4" alt="pantado" style="height: 22px; width: auto">
+    </a>
+    <nav aria-label="Main" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <a href="Main.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 12px; background: #1C1C20; color: #F2F2F3; font-weight: 600; font-size: 15px">Market</a>
+      <a href="Create.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Create</a>
+      <a href="Workspace.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Workspace</a>
+      <a href="Network.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Network</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #E84142"></span>Avalanche
+        <span style="padding: 3px 8px; border-radius: 6px; background: #2E2311; color: #F5B14C; font-size: 12px; font-weight: 600">Fuji testnet</span>
+      </span>
+      <button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #9052F9; color: #FFFFFF; font-weight: 700; font-size: 15px">Connect</button>
+    </div>
+  </header>
+
+  <section style="padding: 28px 24px 40px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+      <div>
+        <h1 style="margin: 0; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -0.05em">Market</h1>
+        
+      </div>
+      
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+      <div style="display: flex; align-items: baseline; gap: 8px"><h2 style="margin: 0; font-size: 15px; font-weight: 700">Top movers</h2><span style="font-size: 13px; color: #8E8E96">24H</span></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{ movers }}" as="m" hint-placeholder-count="4">
+          <a href="{{ m.href }}" style="padding: 16px 18px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 14px">
+            <span style="display: flex; align-items: center; gap: 10px">
+              <sc-if value="{{ m.img }}" hint-placeholder-val="{{ true }}"><img src="{{ m.img }}" alt="" style="width: 30px; height: 30px; border-radius: 50%; flex: none"></sc-if>
+              <sc-if value="{{ m.icon }}" hint-placeholder-val="{{ false }}"><span style="width: 30px; height: 30px; border-radius: 8px; flex: none; background: {{ m.icon }}"></span></sc-if>
+              <span style="min-width: 0; flex: 1"><span style="display: block; font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ m.n }}</span><span style="display: block; font-size: 12px; color: #8E8E96">{{ m.kind }}</span></span>
+              <span style="padding: 4px 8px; border-radius: 8px; background: #11261B; color: #3DD68C; font-size: 13px; font-weight: 700">{{ m.d }}</span>
+            </span>
+            <span style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+              <span style="font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.02em; white-space: nowrap">{{ m.px }}</span>
+              <svg width="110" height="36" viewBox="0 0 110 36" aria-hidden="true" style="flex: none"><polyline points="{{ m.pts }}" fill="none" stroke="#3DD68C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>
+            </span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+      <div role="group" aria-label="Filter" style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="6">
+          <button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.pick }}" style="border: 0; height: 44px; padding: 0 16px; border-radius: 12px; font-weight: 600; font-size: 15px; background: {{ c.bg }}; color: {{ c.fg }}">{{ c.label }} <span style="margin-left: 6px; font-size: 13px; color: {{ c.cnt }}">{{ c.n }}</span></button>
+        </sc-for>
+      </div>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 44px; width: 320px; max-width: 100%; box-sizing: border-box; padding: 0 14px; border-radius: 12px; background: #131316">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E96" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <label for="q" style="position: absolute; left: -9999px">Search the market</label>
+        <input id="q" type="text" placeholder="Search ticker, name or contract address" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #F2F2F3; font: 400 15px 'Inter', sans-serif; outline: none">
+      </div>
+    </div>
+
+    <div style="overflow-x: auto; border-radius: 14px; border: 1px solid #1C1C20; background: #0E0E10">
+      <div style="min-width: 960px">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #17171A; color: #8E8E96; font-size: 11px; letter-spacing: .08em">
+          <div style="flex: 1; display: grid; grid-template-columns: 56px minmax(0, 2.6fr) 120px minmax(0, 1fr) 96px 96px 96px minmax(0, 1.1fr); align-items: center; padding: 14px 0 14px 20px">
+            <span>#</span><span>NAME</span><span>TYPE</span><span style="text-align: right">PRICE</span><span style="text-align: right">24H</span><span style="text-align: right">7D</span><span style="text-align: right">30D</span><span style="text-align: right; padding-right: 8px">VOLUME 24H</span>
+          </div>
+          <span style="width: 68px; text-align: center">WATCH</span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
+          <div class="mrow" style="display: flex; align-items: center; border-top: 1px solid #17171A">
+            <a href="{{ r.href }}" aria-label="{{ r.aria }}" style="flex: 1; display: grid; grid-template-columns: 56px minmax(0, 2.6fr) 120px minmax(0, 1fr) 96px 96px 96px minmax(0, 1.1fr); align-items: center; padding: 12px 0 12px 20px; font-size: 14px">
+              <span style="color: #8E8E96">{{ r.i }}</span>
+              <span style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                <sc-if value="{{ r.isIndex }}" hint-placeholder-val="{{ false }}"><span style="width: 30px; height: 30px; border-radius: 8px; flex: none; background: {{ r.icon }}"></span></sc-if>
+                <sc-if value="{{ r.img }}" hint-placeholder-val="{{ true }}"><img src="{{ r.img }}" alt="" style="width: 30px; height: 30px; border-radius: 50%; flex: none; background: #1C1C20"></sc-if>
+                <sc-if value="{{ r.ini }}" hint-placeholder-val="{{ false }}"><span style="width: 30px; height: 30px; border-radius: 50%; flex: none; background: #26262B; display: grid; place-items: center; font-size: 11px; font-weight: 700">{{ r.ini }}</span></sc-if>
+                <span style="min-width: 0"><span style="display: block; font-weight: 700; font-size: 15px">{{ r.n }}</span><span style="display: block; font-size: 12px; color: #8E8E96; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.sub }}</span></span>
+              </span>
+              <span><span style="padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: {{ r.tbg }}; color: {{ r.tfg }}">{{ r.type }}</span></span>
+              <span style="text-align: right; font-weight: 700">{{ r.px }}</span>
+              <span style="text-align: right; color: {{ r.c1 }}">{{ r.d1 }}</span>
+              <span style="text-align: right; color: {{ r.c7 }}">{{ r.d7 }}</span>
+              <span style="text-align: right; color: {{ r.c30 }}">{{ r.d30 }}</span>
+              <span style="text-align: right; padding-right: 8px; color: #B4B4BB">{{ r.vol }}</span>
+            </a>
+            <span style="width: 68px; display: grid; place-items: center">
+              <button type="button" onClick="{{ r.star }}" aria-pressed="{{ r.on }}" aria-label="{{ r.starLabel }}" style="width: 40px; height: 40px; border: 0; border-radius: 10px; background: transparent; display: grid; place-items: center">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z" fill="{{ r.sfill }}" stroke="{{ r.sline }}" stroke-width="1.7" stroke-linejoin="round"></path></svg>
+              </button>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</div>
+<div aria-hidden="true" style="height: 92px"></div>
+<dc-import name="AskWidget" start-open="{{ no }}" hint-size="60px,60px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { filter: 'All', watch: { TBB: true, CHIP: true, NVDA: true, AVAX: true, FPT: true } }; }
+  renderVals() {
+    const L = {
+      NVDA: '/_blob/0d43753d5851ca8eecab4b854b778625', MSFT: '/_blob/91a17ab5a6aa41c8bbc425718857c5dd', 'BTC.b': '/_blob/b55f097c43acce42022b19b1007c2348',
+      AVAX: '/_blob/92e41da104be710567c2d8cdc66fc303', 'WETH.e': '/_blob/6ca1f2929b21d10905ec3adc5884ba7b', AMD: '/_blob/4c8deb86b3786969f2b4e5f8b251afdc',
+      AVGO: '/_blob/9530acb3b5bde32a917fec784eb41676', TSM: '/_blob/3afc6b63afda63338253eff1d46db0b5', AAPL: '/_blob/77d8003959285cb5c811abf1c316d56e',
+      META: '/_blob/7cb6699a9967d375d78dd56337513776', TSLA: '/_blob/d842e3b1477d3ba9702e7f0b73555cf7', JOE: '/_blob/750e8d80562291d062e695645b5b423f',
+      FPT: '/_blob/e3f1c11249881fd23b4e8f00dc924a42', VCB: '/_blob/523fb233a3ec4e2510ac884e3c071124', HPG: '/_blob/18d7c34d7f599b98be5e7159aea28b54',
+      sAVAX: '/_blob/76b37006a9b6817db9fd6318f2130c4d', 'LINK.e': '/_blob/6203752053b9a93e106bd555323359c4', XAUt0: '/_blob/c487f04d592283f8f54d50aa759bd224'
+    };
+    const half = 'linear-gradient(90deg, #F2F2F3 50%, #9052F9 50%)';
+    const T = {
+      Index: { tbg: '#221637', tfg: '#B18CFB', dot: '#F5B14C', src: 'Fuji · ✓ IndexLens', href: 'Index.dc.html' },
+      Stock: { tbg: '#1C1C20', tfg: '#B4B4BB', dot: '#4C8DFF', src: 'On-chain stock', href: 'Stock.dc.html' },
+      'VN Stock': { tbg: '#10262A', tfg: '#2FC7C0', dot: '#2FC7C0', src: 'HOSE (off-chain)', href: 'StockVN.dc.html' },
+      Token: { tbg: '#1C1C20', tfg: '#B4B4BB', dot: '#E84142', src: 'Avalanche C-Chain', href: 'Token.dc.html' }
+    };
+    const D = [
+      ['Index', 'TBB', 'Tech + BTC Balanced', 'TBB · 5 assets · Manual', '107.02', 1.34, 9.26, 5.59, '$180K', half],
+      ['Index', 'CHIP', 'AI Chips', 'CHIP · 5 assets · Auto', '128.41', 2.08, 6.71, 12.40, '$412K', '#9052F9'],
+      ['Index', 'MAG7', 'Magnificent 7', 'MAG7 · 7 assets · Auto', '111.73', 0.42, 1.95, 4.12, '$96K', '#F2F2F3'],
+      ['Index', 'AVBLU', 'Avalanche Blue Chips', 'AVBLU · 5 assets · Auto', '121.40', 2.10, 8.30, 6.70, '$620K', '#9052F9'],
+      ['Index', 'HEDGE', 'Digital Gold Hedge', 'HEDGE · 4 assets · Auto', '104.66', 0.21, 1.10, 2.35, '$58K', half],
+      ['Index', 'VNL', 'Vietnam Leaders', 'VNL · 5 assets · Manual', '102.35', 0.64, 1.80, 3.05, '$31K', '#F2F2F3'],
+      ['Stock', 'NVDA', 'NVDA', 'NVIDIA', '$169.95', 3.1, -0.2, 11.1, '$12.9M'],
+      ['Stock', 'MSFT', 'MSFT', 'Microsoft', '$512.40', -0.4, 0.8, 1.2, '$6.1M'],
+      ['Stock', 'AAPL', 'AAPL', 'Apple', '$271.06', 0.5, 1.1, 3.2, '$5.8M'],
+      ['Stock', 'TSLA', 'TSLA', 'Tesla', '$402.18', -2.4, -3.9, -4.6, '$8.7M'],
+      ['Stock', 'TSM', 'TSM', 'TSMC', '$244.75', 1.2, 2.0, 6.1, '$3.9M'],
+      ['VN Stock', 'FPT', 'FPT', 'FPT Corporation · HOSE', '96,500 ₫', 1.6, 3.4, 7.9, '412.6B ₫'],
+      ['VN Stock', 'VCB', 'VCB', 'Vietcombank · HOSE', '63,800 ₫', 0.5, 1.2, 2.6, '298.1B ₫'],
+      ['VN Stock', 'HPG', 'HPG', 'Hoa Phat Group · HOSE', '27,450 ₫', -0.9, -2.1, 1.4, '655.0B ₫'],
+      ['VN Stock', 'MWG', 'MWG', 'Mobile World · HOSE', '71,200 ₫', 0.8, 2.7, 5.1, '231.4B ₫'],
+      ['VN Stock', 'VHM', 'VHM', 'Vinhomes · HOSE', '58,900 ₫', -1.3, -0.6, -3.2, '377.9B ₫'],
+      ['Token', 'AVAX', 'AVAX', 'Avalanche', '$6.51', 2.1, 4.8, -2.1, '$84.2M'],
+      ['Token', 'BTC.b', 'BTC.b', 'Bitcoin', '$74,357', 0.7, 2.2, 3.8, '$31.5M'],
+      ['Token', 'WETH.e', 'WETH.e', 'Ether', '$2,318', -1.1, 0.6, 0.9, '$22.9M'],
+      ['Token', 'sAVAX', 'sAVAX', 'Staked AVAX', '$7.84', 1.9, 4.5, -1.4, '$9.4M'],
+      ['Token', 'JOE', 'JOE', 'Joe', '$0.21', -3.2, -6.0, -9.8, '$2.2M'],
+      ['Token', 'XAUt0', 'XAUt0', 'Tether Gold', '$3,972', 0.3, 1.0, 2.9, '$1.1M']
+    ];
+    let dp = 2;
+    const pct = (v) => (v >= 0 ? '+' : '') + v.toFixed(dp) + '%';
+    const col = (v) => (v >= 0 ? '#3DD68C' : '#FF6B6B');
+    const s = this.state;
+    const F = { All: () => true, Watchlist: (d) => !!s.watch[d[1]], Indexes: (d) => d[0] === 'Index', Stocks: (d) => d[0] === 'Stock', 'VN Stocks': (d) => d[0] === 'VN Stock', Tokens: (d) => d[0] === 'Token' };
+    const rows = D.filter(F[s.filter]).map((d, i) => {
+      const t = T[d[0]], on = !!s.watch[d[1]], isIndex = d[0] === 'Index';
+      dp = isIndex ? 2 : 1;
+      return {
+        i: i + 1, n: d[2], sub: d[3], type: d[0], px: d[4], vol: d[8],
+        d1: pct(d[5]), d7: pct(d[6]), d30: pct(d[7]), c1: col(d[5]), c7: col(d[6]), c30: col(d[7]),
+        tbg: t.tbg, tfg: t.tfg, dot: t.dot, src: t.src, href: t.href, aria: 'Open ' + d[2] + ' chart',
+        isIndex: isIndex, icon: isIndex ? d[9] : '', img: !isIndex && L[d[1]] ? L[d[1]] : '', ini: !isIndex && !L[d[1]] ? d[1].slice(0, 2) : '',
+        on: on ? 'true' : 'false', sfill: on ? '#F5B14C' : 'none', sline: on ? '#F5B14C' : '#8E8E96',
+        starLabel: (on ? 'Remove ' : 'Add ') + d[2] + (on ? ' from watchlist' : ' to watchlist'),
+        star: () => this.setState({ watch: Object.assign({}, s.watch, { [d[1]]: !on }) })
+      };
+    });
+    const count = (k) => D.filter(F[k]).length;
+    const chips = ['All', 'Watchlist', 'Indexes', 'Stocks', 'VN Stocks', 'Tokens'].map((k) => ({
+      label: k === 'Watchlist' ? '★ Watchlist' : k, n: count(k), on: k === s.filter ? 'true' : 'false',
+      bg: k === s.filter ? '#F2F2F3' : '#17171A', fg: k === s.filter ? '#0B0B0D' : '#B4B4BB', cnt: k === s.filter ? '#46464D' : '#8E8E96',
+      pick: () => this.setState({ filter: k })
+    }));
+    const spark = (seed, up) => {
+      let h = seed; const r = () => { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
+      const v = []; let x = 0; for (let i = 0; i < 24; i++) { x += (r() - 0.45) * 1.2 + up / 24; v.push(x); }
+      const mn = Math.min.apply(null, v), mx = Math.max.apply(null, v);
+      return v.map((y, i) => (i / 23 * 108 + 1).toFixed(1) + ',' + (33 - (y - mn) / (mx - mn || 1) * 30).toFixed(1)).join(' ');
+    };
+    const movers = [
+      { n: 'AI Chips', kind: 'Top index', px: '128.41', d: '+2.08%', icon: '#9052F9', img: '', href: 'Index.dc.html', pts: spark(5, 2.1) },
+      { n: 'NVDA', kind: 'Top stock', px: '$169.95', d: '+3.1%', icon: '', img: L.NVDA, href: 'Stock.dc.html', pts: spark(9, 3.1) },
+      { n: 'FPT', kind: 'Top VN stock', px: '96,500 ₫', d: '+1.6%', icon: '', img: L.FPT, href: 'StockVN.dc.html', pts: spark(13, 1.6) },
+      { n: 'AVAX', kind: 'Top token', px: '$6.51', d: '+2.1%', icon: '', img: L.AVAX, href: 'Token.dc.html', pts: spark(21, 2.1) }
+    ];
+    return { rows, chips, movers, no: false };
+  }
+}
+</script>
+</body>
+</html>

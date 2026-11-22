@@ -8,6 +8,6 @@ describe("nav", () => {
     const s = child(v, "p", { _href: { Redeem: "/redeem/0xabc" } }, 0);
     expect(nav("Redeem", s)).toBe("/redeem/0xabc");
     expect(nav("Portfolio", s)).toBe("/portfolio?x=1");
-    expect(nav("Swap", s)).toBe("/swap");
+    expect(nav("Swap", s)).toBe("/marketplace"); // no swap page (owner)
   });
 });

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create index</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#060607}
+a{color:#F2F2F3;text-decoration:none}a:hover{color:#B18CFB}
+button{font-family:inherit;cursor:pointer}
+textarea::placeholder,input::placeholder{color:#8E8E96}
+input[type=range]{accent-color:#9052F9}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #B18CFB;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+<div style="max-width: 1420px; margin: 0 auto; background: #0B0B0D; border: 1px solid #1A1A1D; border-radius: 18px; overflow: hidden">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 14px 16px; border-bottom: 1px solid #17171A">
+    <a href="Main.dc.html" aria-label="Pantado home" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #17171A; border: 1px solid #1F1F23; display: grid; place-items: center">
+        <svg width="24" height="18" viewBox="10 14 324 241" aria-hidden="true"><path d="M94 16H238C291 16 331 60 331 113C331 166 291 206 240 206H213L219 200C247 195 267 176 267 153C267 126 247 104 221 104H94Z" fill="#F4F2FA"></path><path d="M137 146V252H12V214C12 176 42 146 80 146Z" fill="#9052F9"></path></svg>
+      </span>
+      <img src="/_blob/33071f8508580726c9aadb20187ee8f4" alt="pantado" style="height: 22px; width: auto">
+    </a>
+    <nav aria-label="Main" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <a href="Main.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Market</a>
+      <a href="Create.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 12px; background: #1C1C20; color: #F2F2F3; font-weight: 600; font-size: 15px">Create</a>
+      <a href="Workspace.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Workspace</a>
+      <a href="Network.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Network</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #E84142"></span>Avalanche
+        <span style="padding: 3px 8px; border-radius: 6px; background: #2E2311; color: #F5B14C; font-size: 12px; font-weight: 600">Fuji testnet</span>
+      </span>
+      <button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #9052F9; color: #FFFFFF; font-weight: 700; font-size: 15px">Connect</button>
+    </div>
+  </header>
+
+  <div style="padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+    <h1 style="margin: 0 0 2px 4px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.04em">Create index</h1>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch">
+
+      <aside style="flex: 1 1 340px; max-width: 100%; min-width: 0; box-sizing: border-box; padding: 14px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 12px; background: #131316">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E96" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <label for="srch" style="position: absolute; left: -9999px">Search stocks and tokens</label>
+          <input id="srch" type="text" placeholder="Search stocks and tokens" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #F2F2F3; font: 400 15px 'Inter', sans-serif; outline: none">
+        </div>
+        <div role="group" aria-label="Asset type" style="display: flex; gap: 6px">
+          <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="3">
+            <button type="button" aria-pressed="{{ k.on }}" onClick="{{ k.pick }}" style="border: 0; height: 40px; padding: 0 14px; border-radius: 10px; font-weight: 600; font-size: 14px; background: {{ k.bg }}; color: {{ k.fg }}">{{ k.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; max-height: 860px; overflow-y: auto">
+          <sc-for list="{{ universe }}" as="u" hint-placeholder-count="16">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-top: 1px solid #17171A">
+              <img src="{{ u.img }}" alt="" style="width: 24px; height: 24px; border-radius: 50%">
+              <b style="font-size: 15px">{{ u.t }}</b><span style="flex: 1; font-size: 13px; color: #8E8E96; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ u.name }}</span>
+              <button type="button" onClick="{{ u.toggle }}" aria-label="{{ u.aria }}" style="border: 0; width: 72px; height: 38px; border-radius: 10px; font-weight: 700; font-size: 13px; background: {{ u.bg }}; color: {{ u.fg }}">{{ u.btn }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </aside>
+
+      <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+        <div style="padding: 20px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">Details</h2>
+          <div style="display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 8px"><label for="nm" style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">NAME</label><input id="nm" type="text" value="My basket" style="height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 12px; border: 1px solid #1F1F23; background: #131316; color: #F2F2F3; font: 700 17px 'Inter', sans-serif"></div>
+            <div style="display: flex; flex-direction: column; gap: 8px"><label for="tk" style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">TICKER</label><input id="tk" type="text" value="MYBK" style="height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 12px; border: 1px solid #1F1F23; background: #131316; color: #F2F2F3; font: 700 17px 'Inter', sans-serif"></div>
+          </div>
+          <label for="ds" style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">DESCRIPTION</label>
+          <textarea id="ds" rows="3" placeholder="What this index is for, in one or two sentences" style="box-sizing: border-box; padding: 14px 16px; border-radius: 12px; border: 1px solid #1F1F23; background: #131316; color: #F2F2F3; font: 400 15px 'Inter', sans-serif; resize: vertical"></textarea>
+        </div>
+
+        <div style="padding: 20px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Basket</h2>
+            <div role="group" aria-label="Weighting" style="display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: #17171A">
+              <sc-for list="{{ presets }}" as="p" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{ p.on }}" onClick="{{ p.pick }}" style="border: 0; padding: 9px 14px; border-radius: 9px; font-weight: 600; font-size: 14px; background: {{ p.bg }}; color: {{ p.fg }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 160px minmax(0, 1fr) 64px 32px; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid #17171A">
+              <div style="display: flex; align-items: center; gap: 10px"><img src="{{ r.img }}" alt="" style="width: 24px; height: 24px; border-radius: 50%"><b style="font-size: 16px">{{ r.t }}</b><span style="font-size: 13px; color: #8E8E96">{{ r.k }}</span></div>
+              <input type="range" min="0" max="60" value="{{ r.w }}" onChange="{{ r.set }}" aria-label="{{ r.label }}" style="width: 100%">
+              <b style="font-size: 16px; text-align: right">{{ r.wl }}</b>
+              <button type="button" onClick="{{ r.rm }}" aria-label="{{ r.rml }}" style="border: 0; background: transparent; color: #8E8E96; font-size: 18px">×</button>
+            </div>
+          </sc-for>
+          <div style="display: flex; gap: 3px; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 10px">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5"><span style="flex: {{ r.w }}; background: {{ r.c }}"></span></sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; padding-top: 4px"><span style="color: #B4B4BB">{{ split }}</span><span style="color: {{ totC }}; font-weight: 600">Total {{ total }}%</span></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+          <div style="padding: 16px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">90D BACKTEST</div><div style="margin-top: 6px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 22px; color: #3DD68C">+5.7%</div></div>
+          <div style="padding: 16px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">VOLATILITY</div><div style="margin-top: 6px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 22px">34%</div></div>
+          <div style="padding: 16px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">MAX DRAWDOWN</div><div style="margin-top: 6px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 22px; color: #FF6B6B">-18.7%</div></div>
+          <div style="padding: 16px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">VS AVAX 90D</div><div style="margin-top: 6px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 22px; color: #3DD68C">+7.8 pts</div></div>
+        </div>
+
+        <div style="padding: 20px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+            <div><h2 style="margin: 0; font-size: 17px; font-weight: 700">Rebalancing</h2><p style="margin: 4px 0 0; font-size: 14px; color: #B4B4BB">{{ rebNote }}</p></div>
+            <div role="group" aria-label="Rebalancing" style="display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: #17171A">
+              <sc-for list="{{ rmodes }}" as="m" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{ m.on }}" onClick="{{ m.pick }}" style="border: 0; padding: 9px 14px; border-radius: 9px; font-weight: 600; font-size: 14px; background: {{ m.bg }}; color: {{ m.fg }}">{{ m.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ isAuto }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 16px; border-radius: 14px; background: #131316; display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+                <label for="trg" style="font-size: 15px; font-weight: 600">Drift trigger</label>
+                <span style="padding: 4px 10px; border-radius: 8px; background: #221637; color: #C9B3FD; font-weight: 700; font-size: 14px">±{{ trig }}% of target</span>
+              </div>
+              <input id="trg" type="range" min="10" max="200" step="5" value="{{ trig }}" onChange="{{ setTrig }}" style="width: 100%">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; height: 10px; border-radius: 5px; background: #1F1F23">
+                  <div style="position: absolute; top: 0; bottom: 0; left: {{ bandL }}; width: {{ bandW }}; border-radius: 5px; background: #2E2147"></div>
+                  <div style="position: absolute; top: -4px; bottom: -4px; left: {{ tgtL }}; width: 2px; background: #B18CFB"></div>
+                </div>
+                <div style="font-size: 13px; color: #B4B4BB">An asset at a 20% target rebalances below <b style="color: #F2F2F3">{{ lo }}%</b> or above <b style="color: #F2F2F3">{{ hi }}%</b>.</div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasGuards }}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+              <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid #1F1F23"><div style="font-size: 12px; color: #8E8E96">Notice</div><div style="font-weight: 700; font-size: 15px; margin-top: 2px">48 h</div></div>
+              <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid #1F1F23"><div style="font-size: 12px; color: #8E8E96">Daily cap</div><div style="font-weight: 700; font-size: 15px; margin-top: 2px">5%</div></div>
+              <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid #1F1F23"><div style="font-size: 12px; color: #8E8E96">Loss budget</div><div style="font-weight: 700; font-size: 15px; margin-top: 2px">1%</div></div>
+              <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid #1F1F23"><div style="font-size: 12px; color: #8E8E96">Max duration</div><div style="font-weight: 700; font-size: 15px; margin-top: 2px">14 days</div></div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="padding: 20px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-wrap: wrap; gap: 20px">
+          <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Visibility</h2>
+            <div role="radiogroup" aria-label="Visibility" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+              <sc-for list="{{ vis }}" as="v" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{ v.on }}" onClick="{{ v.pick }}" style="text-align: left; padding: 14px; border-radius: 14px; border: 1px solid {{ v.border }}; background: {{ v.bg }}; color: #F2F2F3; display: flex; flex-direction: column; gap: 6px">
+                  <span style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px"><span style="width: 14px; height: 14px; border-radius: 50%; box-sizing: border-box; border: 2px solid {{ v.ring }}; background: {{ v.dot }}"></span>{{ v.label }}</span>
+                  <span style="font-size: 13px; line-height: 1.45; color: #B4B4BB">{{ v.desc }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">First buy</h2>
+            <div style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 16px; border-radius: 12px; border: 1px solid #26262B; background: #131316">
+              <label for="first" style="position: absolute; left: -9999px">First buy in USDC</label>
+              <input id="first" type="text" inputmode="decimal" value="100" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #F2F2F3; font: 700 20px 'Inter Tight', sans-serif; outline: none">
+              <span style="font-weight: 700; color: #B4B4BB">USDC</span>
+            </div>
+            <div style="font-size: 12px; color: #8E8E96">At least 100 USDC. It fills the vault, and you hold the first units.</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px solid #17171A; font-size: 14px">
+              <div style="display: flex; justify-content: space-between"><span style="color: #B4B4BB">Creation fee</span><span>5 USDC</span></div>
+              <div style="display: flex; justify-content: space-between"><span style="color: #B4B4BB">Starting level</span><span>100.00</span></div>
+              <div style="display: flex; justify-content: space-between; font-weight: 700"><span>You pay</span><span>105 USDC</span></div>
+            </div>
+            <button type="button" style="border: 0; height: 52px; border-radius: 14px; background: #F2F2F3; color: #0B0B0D; font-weight: 700; font-size: 16px">{{ cta }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div aria-hidden="true" style="height: 92px"></div>
+<dc-import name="AskWidget" start-open="{{ no }}" hint-size="60px,60px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1220}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { kind: 'All', preset: 'Equal', reb: 'Auto', vis: 'Public', trig: 50, picked: ['NVDA', 'MSFT', 'BTC.b', 'AVAX', 'WETH.e'], w: { NVDA: 25, MSFT: 25, 'BTC.b': 25, AVAX: 15, 'WETH.e': 10 } };
+  }
+  renderVals() {
+    const U = [
+      ['NVDA', 'NVIDIA', 'Stock', '/_blob/0d43753d5851ca8eecab4b854b778625', '#76B900'],
+      ['MSFT', 'Microsoft', 'Stock', '/_blob/91a17ab5a6aa41c8bbc425718857c5dd', '#00A4EF'],
+      ['AAPL', 'Apple', 'Stock', '/_blob/77d8003959285cb5c811abf1c316d56e', '#B4B4BB'],
+      ['AMD', 'AMD', 'Stock', '/_blob/4c8deb86b3786969f2b4e5f8b251afdc', '#9052F9'],
+      ['TSLA', 'Tesla', 'Stock', '/_blob/d842e3b1477d3ba9702e7f0b73555cf7', '#CC2936'],
+      ['AVGO', 'Broadcom', 'Stock', '/_blob/9530acb3b5bde32a917fec784eb41676', '#D3343A'],
+      ['TSM', 'TSMC', 'Stock', '/_blob/3afc6b63afda63338253eff1d46db0b5', '#C2410C'],
+      ['META', 'Meta', 'Stock', '/_blob/7cb6699a9967d375d78dd56337513776', '#1877F2'],
+      ['GOOGL', 'Alphabet', 'Stock', '/_blob/f05ca3e25a7d626881a61a8db7951b43', '#4285F4'],
+      ['AMZN', 'Amazon', 'Stock', '/_blob/bcc8f0dd61dc81226e30508b9a6b3909', '#FF9900'],
+      ['MU', 'Micron', 'Stock', '/_blob/5a0dca5e368d17b6206338ad905a311e', '#3A5BA0'],
+      ['MSTR', 'Strategy', 'Stock', '/_blob/51e0f492abe65d6d414b1fa42b6c868b', '#E8822B'],
+      ['COIN', 'Coinbase', 'Stock', '/_blob/d115389f87bd0857fdf46da4e7e29165', '#1652F0'],
+      ['FPT', 'FPT Corp', 'Stock', '/_blob/e3f1c11249881fd23b4e8f00dc924a42', '#F5B14C'],
+      ['VCB', 'Vietcombank', 'Stock', '/_blob/523fb233a3ec4e2510ac884e3c071124', '#2FA24B'],
+      ['BTC.b', 'Bitcoin', 'Token', '/_blob/b55f097c43acce42022b19b1007c2348', '#F7931A'],
+      ['AVAX', 'Avalanche', 'Token', '/_blob/92e41da104be710567c2d8cdc66fc303', '#E84142'],
+      ['WETH.e', 'Ether', 'Token', '/_blob/6ca1f2929b21d10905ec3adc5884ba7b', '#8A92F0'],
+      ['sAVAX', 'Staked AVAX', 'Token', '/_blob/76b37006a9b6817db9fd6318f2130c4d', '#2FC7C0'],
+      ['JOE', 'Joe', 'Token', '/_blob/750e8d80562291d062e695645b5b423f', '#F1A1B0'],
+      ['LINK.e', 'Chainlink', 'Token', '/_blob/6203752053b9a93e106bd555323359c4', '#375BD2'],
+      ['XAUt0', 'Tether Gold', 'Token', '/_blob/c487f04d592283f8f54d50aa759bd224', '#D4AF37']
+    ];
+    const by = {}; U.forEach((u) => { by[u[0]] = u; });
+    const s = this.state;
+    const kmap = { All: null, Stocks: 'Stock', Tokens: 'Token' };
+    const universe = U.filter((u) => !kmap[s.kind] || u[2] === kmap[s.kind]).map((u) => {
+      const added = s.picked.indexOf(u[0]) >= 0;
+      return {
+        t: u[0], name: u[1], img: u[3], btn: added ? 'Added' : 'Add', aria: (added ? 'Remove ' : 'Add ') + u[0],
+        bg: added ? '#1C1C20' : '#F2F2F3', fg: added ? '#B4B4BB' : '#0B0B0D',
+        toggle: () => this.setState(added ? { picked: s.picked.filter((x) => x !== u[0]) } : { picked: s.picked.concat([u[0]]), w: Object.assign({}, s.w, { [u[0]]: 10 }) })
+      };
+    });
+    const rows = s.picked.map((t) => ({
+      t: t, k: by[t][2], img: by[t][3], c: by[t][4], w: s.w[t] || 0, wl: (s.w[t] || 0) + '%', label: 'Weight of ' + t, rml: 'Remove ' + t,
+      set: (e) => this.setState({ w: Object.assign({}, s.w, { [t]: Number(e.target.value) }) }),
+      rm: () => this.setState({ picked: s.picked.filter((x) => x !== t) })
+    }));
+    const total = rows.reduce((a, r) => a + r.w, 0);
+    const stocks = rows.filter((r) => r.k === 'Stock').reduce((a, r) => a + r.w, 0);
+    const eq = () => { const n = s.picked.length || 1; const w = {}; s.picked.forEach((t, i) => { w[t] = Math.floor(100 / n) + (i < 100 % n ? 1 : 0); }); return w; };
+    const seg = (list, cur, key, onBg, extra) => list.map((x) => ({ label: x, on: x === cur ? 'true' : 'false', bg: x === cur ? onBg : 'transparent', fg: x === cur ? (onBg === '#F2F2F3' ? '#0B0B0D' : '#F2F2F3') : '#B4B4BB', pick: () => this.setState(Object.assign({ [key]: x }, extra ? extra(x) : {})) }));
+    const notes = { Off: 'Weights move with prices. The basket never changes.', Manual: 'You publish new weights. Holders get 48h notice.', Auto: 'Rebalances itself when an asset drifts too far.' };
+    const kinds = ['All', 'Stocks', 'Tokens'].map((k) => ({ label: k, on: k === s.kind ? 'true' : 'false', bg: k === s.kind ? '#F2F2F3' : '#17171A', fg: k === s.kind ? '#0B0B0D' : '#B4B4BB', pick: () => this.setState({ kind: k }) }));
+    return {
+      no: false, kinds, universe, rows, total, totC: total === 100 ? '#3DD68C' : '#F5B14C',
+      split: 'Stocks ' + stocks + '% · Tokens ' + (total - stocks) + '%',
+      presets: seg(['Equal', 'Market cap', 'Low volatility'], s.preset, 'preset', '#2A2A2F', (x) => (x === 'Equal' ? { w: eq() } : {})),
+      rmodes: seg(['Off', 'Manual', 'Auto'], s.reb, 'reb', '#2A2A2F'),
+      vis: [['Public', 'Listed in the Market for everyone to follow.'], ['Private', 'Only you see it, in Workspace. Make it public later.']].map((v) => ({
+        label: v[0], desc: v[1], on: v[0] === s.vis ? 'true' : 'false',
+        bg: v[0] === s.vis ? '#17131F' : '#131316', border: v[0] === s.vis ? '#9052F9' : '#1F1F23',
+        ring: v[0] === s.vis ? '#9052F9' : '#46464D', dot: v[0] === s.vis ? '#9052F9' : 'transparent',
+        pick: () => this.setState({ vis: v[0] })
+      })),
+      rebNote: notes[s.reb], isAuto: s.reb === 'Auto', hasGuards: s.reb !== 'Off', trig: s.trig,
+      lo: (20 * (1 - s.trig / 100)).toFixed(0), hi: (20 * (1 + s.trig / 100)).toFixed(0),
+      bandL: (Math.max(0, 20 * (1 - s.trig / 100)) / 60 * 100).toFixed(1) + '%',
+      bandW: ((Math.min(60, 20 * (1 + s.trig / 100)) - Math.max(0, 20 * (1 - s.trig / 100))) / 60 * 100).toFixed(1) + '%',
+      tgtL: (20 / 60 * 100).toFixed(1) + '%',
+      cta: s.vis === 'Public' ? 'Review: publish and buy' : 'Review: create and buy',
+      setTrig: (e) => this.setState({ trig: Number(e.target.value) })
+    };
+  }
+}
+</script>
+</body>
+</html>

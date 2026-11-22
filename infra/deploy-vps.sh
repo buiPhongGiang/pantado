@@ -48,7 +48,7 @@ ssh "$VPS" "cd '$DIR' && $COMPOSE up -d --build --remove-orphans"
 ok "stack started"
 
 echo "waiting for health…"
-for host in "api.$DOMAIN/health" "$DOMAIN/marketplace"; do
+for host in "api.$DOMAIN/health" "$DOMAIN/"; do
   for _ in $(seq 1 60); do
     if curl -fsS --max-time 5 "https://$host" >/dev/null 2>&1; then ok "https://$host"; continue 2; fi
     sleep 5

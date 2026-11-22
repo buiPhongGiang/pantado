@@ -1,5 +1,5 @@
 /**
- * One-command Fuji deploy (spec §14.1): contracts from config (25 pTokens + test tokens, seeded stock reserve,
+ * One-command Fuji deploy (spec §14.1): contracts from config (50 pTokens + test tokens, seeded stock reserve,
  * keeper roles) → contracts/deployments/fuji.json → keeper gas top-ups → demo indexes.
  *
  *   pnpm --filter @pantado/scripts deploy:fuji            # preflight, deploy, fund keepers, seed demo indexes

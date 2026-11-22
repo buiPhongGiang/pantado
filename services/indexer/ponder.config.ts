@@ -1,9 +1,10 @@
 import { createConfig, factory, loadBalance, rateLimit } from "ponder";
-import { erc20Abi, getAbiItem, http } from "viem";
+import { erc20Abi, getAbiItem, http, zeroAddress } from "viem";
 import { executionRpcs, loadDeployment, loadProfile } from "@pantado/shared";
 import {
   feeSplitterAbi,
   indexFactoryAbi,
+  indexRegistryAbi,
   indexVaultAbi,
   priceOracleAbi,
   rebalancerAbi,
@@ -47,6 +48,8 @@ export default createConfig({
   },
   contracts: {
     IndexFactory: { chain, abi: indexFactoryAbi, address: c.factory, startBlock },
+    // indexes as data (no deposit); deployments made before it have none, and the zero address has no logs
+    IndexRegistry: { chain, abi: indexRegistryAbi, address: c.indexRegistry ?? zeroAddress, startBlock },
     IndexVault: {
       chain,
       abi: indexVaultAbi,

@@ -1,0 +1,25 @@
+{
+  "$comment": "Pantado Price Chain: an Avalanche L1 where independent reporters submit prices; the median of each round is final there and is sent to the C-Chain receiver through Avalanche ICM. Phase 1 = local network (avalanche blockchain deploy pantadoprice --local). Addresses after deployment: contracts/deployments/pricechain-<network>.json.",
+  "version": 1,
+  "networks": {
+    "local": {
+      "l1": {
+        "name": "pantadoprice",
+        "chainId": 55177,
+        "rpcEnv": "PRICECHAIN_L1_RPC",
+        "blockchainIdHex": "0x1278ea69bb8ecdf8e17ddec4271e4476acc7b21b3df730292201633267e67678"
+      },
+      "cchain": {
+        "chainId": 1337,
+        "rpc": "http://127.0.0.1:9650/ext/bc/C/rpc",
+        "blockchainIdHex": "0x0a19dff4513d7c6dae8a199295fa48ec5c07b6b8cd4ca169cec4c930bb024060"
+      },
+      "icmMessenger": "0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf"
+    }
+  },
+  "roundSec": 60,
+  "threshold": 2,
+  "reporters": 3,
+  "destinationGasLimit": 1500000,
+  "reportEverySec": 20
+}

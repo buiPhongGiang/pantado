@@ -14,9 +14,10 @@ import { getAt, ROOT, setAt, tempRoot } from "./helpers.js";
 const NVDA = loadAssets({ root: ROOT }).findIndex((a) => a.id === "nvda");
 
 describe("loaders on the real config", () => {
-  it("loads assets.json: 25 stocks, 35 tokens (spec §4's five first, B69), 1 quote", () => {
+  it("loads assets.json: 50 stocks (25 US, 25 Vietnamese), 35 tokens (spec §4's five first, B69), 1 quote", () => {
     const assets = loadAssets({ root: ROOT });
-    expect(assets.filter((a) => a.kind === "stock")).toHaveLength(25);
+    expect(assets.filter((a) => a.kind === "stock")).toHaveLength(50);
+    expect(assets.filter((a) => a.kind === "stock" && a.display.chain === "hose")).toHaveLength(25);
     expect(assets.filter((a) => a.kind === "token").map((a) => a.id)).toEqual([
       "wavax", "btcb", "wethe", "savax", "joe",
       "usdt", "eurc", "phar", "ausd", "usde", "wbtce", "super", "coq", "black", "aavee",
@@ -36,7 +37,7 @@ describe("loaders on the real config", () => {
           ? { sizeCapUsd: 25_000, oiCapUsd: 250_000, spreadBps: 15 }
           : { sizeCapUsd: 5_000, oiCapUsd: 50_000, spreadBps: 15 },
       );
-      expect(a.display.badge).toBe("Reference market: Robinhood Chain (on-chain)");
+      expect(a.display.badge).toBe(a.display.chain === "hose" ? "Reference market: HOSE (off-chain)" : "Reference market: Robinhood Chain (on-chain)");
     }
   });
 
@@ -67,7 +68,7 @@ describe("loaders on the real config", () => {
 
   it("loads demo indexes and checks them against the registry", () => {
     const ix = loadDemoIndexes({ root: ROOT }).indexes;
-    expect(ix.map((i) => i.ticker)).toEqual(["TBB", "CHIP", "MAG7", "CSTK", "MYBK", "AVDEX", "AVBLU", "AVMEME", "DEFI", "HEDGE", "WSAVX"]);
+    expect(ix.map((i) => i.ticker)).toEqual(["TBB", "CHIP", "MAG7", "CSTK", "MYBK", "AVDEX", "AVBLU", "AVMEME", "DEFI", "HEDGE", "WSAVX", "VNL", "VNAI"]);
     // the community indexes: each by its own demo wallet, with a description the factory accepts
     const community = ix.slice(5);
     expect(new Set(community.map((i) => i.owner)).size).toBe(community.length);

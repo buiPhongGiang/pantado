@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tech + BTC Balanced</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#060607}
+a{color:#F2F2F3;text-decoration:none}a:hover{color:#B18CFB}
+button{font-family:inherit;cursor:pointer}
+input::placeholder{color:#8E8E96}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #B18CFB;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+<div style="max-width: 1420px; margin: 0 auto; background: #0B0B0D; border: 1px solid #1A1A1D; border-radius: 18px; position: relative">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 14px 16px; border-bottom: 1px solid #17171A">
+    <a href="Main.dc.html" aria-label="Pantado home" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #17171A; border: 1px solid #1F1F23; display: grid; place-items: center">
+        <svg width="24" height="18" viewBox="10 14 324 241" aria-hidden="true"><path d="M94 16H238C291 16 331 60 331 113C331 166 291 206 240 206H213L219 200C247 195 267 176 267 153C267 126 247 104 221 104H94Z" fill="#F4F2FA"></path><path d="M137 146V252H12V214C12 176 42 146 80 146Z" fill="#9052F9"></path></svg>
+      </span>
+      <img src="/_blob/33071f8508580726c9aadb20187ee8f4" alt="pantado" style="height: 22px; width: auto">
+    </a>
+    <nav aria-label="Main" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <a href="Main.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 12px; background: #1C1C20; color: #F2F2F3; font-weight: 600; font-size: 15px">Market</a>
+      <a href="Create.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Create</a>
+      <a href="Workspace.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Workspace</a>
+      <a href="Network.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Network</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #E84142"></span>Avalanche
+        <span style="padding: 3px 8px; border-radius: 6px; background: #2E2311; color: #F5B14C; font-size: 12px; font-weight: 600">Fuji testnet</span>
+      </span>
+      <button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #9052F9; color: #FFFFFF; font-weight: 700; font-size: 15px">Connect</button>
+    </div>
+  </header>
+
+  <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+      <a href="Main.dc.html" aria-label="Back to Market" style="width: 44px; height: 44px; border-radius: 12px; background: #131316; display: grid; place-items: center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F2F3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+      </a>
+      <h1 style="margin: 0; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.04em">Tech + BTC Balanced</h1>
+      <span style="padding: 4px 8px; border-radius: 7px; background: #1C1C20; font-weight: 700; font-size: 13px; color: #B4B4BB">TBB</span>
+      <span style="color: #8E8E96; font-size: 15px">by @handle</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #131316; font-size: 13px; font-weight: 500; color: #B4B4BB"><span style="width: 6px; height: 6px; border-radius: 50%; background: #F5B14C"></span>Indexed on Fuji testnet</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #131316; font-size: 13px; font-weight: 500; color: #B4B4BB"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9052F9"></span>Manual · creator publishes versions</span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 14px; background: #17130C; border: 1px solid #3A2C12">
+      <span style="padding: 4px 10px; border-radius: 8px; background: #2E2311; color: #F5B14C; font-weight: 600; font-size: 13px">Version 4 in 18h</span>
+      <span style="font-weight: 600; font-size: 15px; flex: 1">NVDA 25 → 30% · AVAX 15 → 10%</span>
+      <a href="#" style="color: #F5B14C; font-weight: 600; font-size: 15px">View changes</a>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start">
+
+      <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; overflow: hidden">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 12px 16px; border-bottom: 1px solid #17171A; font-size: 14px">
+            <sc-for list="{{ tfs }}" as="t" hint-placeholder-count="5">
+              <button type="button" aria-pressed="{{ t.on }}" onClick="{{ t.pick }}" style="border: 0; background: transparent; padding: 6px 8px; font-weight: 600; color: {{ t.fg }}">{{ t.label }}</button>
+            </sc-for>
+            <span style="width: 1px; height: 18px; background: #26262B; margin: 0 8px"></span>
+            <span style="padding: 6px 8px; color: #B4B4BB; font-weight: 500">Indicators</span>
+            <span style="padding: 6px 8px; color: #B4B4BB; font-weight: 500">Compare</span>
+            <span style="margin-left: auto; font-weight: 700">Level</span><span style="color: #46464D; margin: 0 6px">/</span><span style="color: #8E8E96; font-weight: 500">USD</span>
+          </div>
+          <div style="padding: 12px 16px 0; font-size: 13px; display: flex; gap: 12px; flex-wrap: wrap">
+            <b>Tech + BTC Balanced · 1D</b>
+            <span style="color: #8E8E96">O <span style="color: #3DD68C">105.60</span></span>
+            <span style="color: #8E8E96">H <span style="color: #3DD68C">107.34</span></span>
+            <span style="color: #8E8E96">L <span style="color: #3DD68C">104.19</span></span>
+            <span style="color: #8E8E96">C <span style="color: #3DD68C">107.02</span></span>
+            <span style="color: #3DD68C">+1.34%</span>
+          </div>
+          <div style="display: flex; padding: 8px 0 0 8px">
+            <div style="flex: 1; min-width: 0; position: relative; height: 380px">
+              <sc-for list="{{ grid }}" as="g" hint-placeholder-count="5">
+                <div style="position: absolute; left: 0; right: 0; top: {{ g.y }}px; border-top: 1px solid #141417"></div>
+              </sc-for>
+              <div style="position: absolute; left: 0; right: 0; top: {{ lastY }}px; border-top: 1px dotted #3DD68C; opacity: .7"></div>
+              <div style="position: absolute; inset: 0; display: flex; gap: 2px">
+                <sc-for list="{{ candles }}" as="c" hint-placeholder-count="60">
+                  <div style="flex: 1; position: relative">
+                    <div style="position: absolute; left: 50%; width: 1px; top: {{ c.wt }}px; height: {{ c.wh }}px; background: {{ c.col }}"></div>
+                    <div style="position: absolute; left: 12%; right: 12%; top: {{ c.bt }}px; height: {{ c.bh }}px; background: {{ c.col }}; border-radius: 1px"></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="width: 64px; flex: none; position: relative; height: 380px; border-left: 1px solid #17171A; font-size: 11px; color: #8E8E96">
+              <sc-for list="{{ grid }}" as="g" hint-placeholder-count="5">
+                <span style="position: absolute; left: 8px; top: {{ g.ly }}px">{{ g.v }}</span>
+              </sc-for>
+              <span style="position: absolute; left: 0; top: {{ lastLy }}px; padding: 2px 6px; background: #3DD68C; color: #0B0B0D; font-weight: 700">107.02</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 2px; height: 64px; align-items: flex-end; padding: 0 72px 0 8px">
+            <sc-for list="{{ candles }}" as="c" hint-placeholder-count="60">
+              <div style="flex: 1; height: {{ c.vh }}px; background: {{ c.vcol }}"></div>
+            </sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 88px 12px 24px; font-size: 11px; color: #8E8E96"><span>Aug</span><span>15</span><span>Sep</span><span>15</span><span>Oct</span><span>15</span><span>Nov</span></div>
+        </div>
+
+        <div style="border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; overflow: hidden">
+          <div role="tablist" style="display: flex; gap: 4px; padding: 0 12px; border-bottom: 1px solid #17171A; overflow-x: auto">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+              <button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="border: 0; background: transparent; padding: 14px 12px; font-weight: 600; font-size: 14px; white-space: nowrap; color: {{ t.fg }}; box-shadow: inset 0 -2px 0 {{ t.line }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showComp }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x: auto">
+              <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px">
+                <thead><tr style="color: #8E8E96; font-size: 11px; letter-spacing: .08em">
+                  <th style="text-align: left; padding: 12px 20px; font-weight: 500">ASSET</th>
+                  <th style="text-align: right; padding: 12px 8px; font-weight: 500">WEIGHT</th>
+                  <th style="text-align: right; padding: 12px 8px; font-weight: 500">PRICE</th>
+                  <th style="text-align: right; padding: 12px 8px; font-weight: 500">24H</th>
+                  <th style="text-align: right; padding: 12px 8px; font-weight: 500">30D</th>
+                  <th style="text-align: left; padding: 12px 20px 12px 32px; font-weight: 500">PRICE SOURCE</th>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ comp }}" as="a" hint-placeholder-count="5">
+                    <tr style="border-top: 1px solid #17171A">
+                      <td style="padding: 12px 20px"><div style="display: flex; align-items: center; gap: 10px"><img src="{{ a.img }}" alt="" style="width: 24px; height: 24px; border-radius: 50%"><b>{{ a.t }}</b><span style="color: #8E8E96">{{ a.k }}</span></div></td>
+                      <td style="padding: 12px 8px; text-align: right; font-weight: 600">{{ a.w }}</td>
+                      <td style="padding: 12px 8px; text-align: right">{{ a.px }}</td>
+                      <td style="padding: 12px 8px; text-align: right; color: {{ a.c1 }}">{{ a.d }}</td>
+                      <td style="padding: 12px 8px; text-align: right; color: {{ a.c30 }}">{{ a.m }}</td>
+                      <td style="padding: 12px 20px 12px 32px; font-size: 13px; color: #B4B4BB"><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; background: {{ a.dot }}"></span>{{ a.src }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showOther }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 8px 20px 16px">
+              <sc-for list="{{ events }}" as="e" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 16px; padding: 12px 0; border-top: 1px solid #17171A; font-size: 14px">
+                  <span style="color: #8E8E96">{{ e.when }}</span><span>{{ e.what }}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8E8E96">{{ e.ref }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <aside style="flex: 1 1 320px; min-width: 0; max-width: 100%; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <div style="padding: 14px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; text-align: center"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">LEVEL</div><div style="font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 26px; margin-top: 4px">107.02</div></div>
+          <div style="padding: 14px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; text-align: center"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">SINCE LAUNCH</div><div style="font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 26px; margin-top: 4px; color: #3DD68C">+7.02%</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <div style="padding: 12px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; text-align: center"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">HOLDERS</div><div style="font-weight: 700; font-size: 16px; margin-top: 4px">1,204</div></div>
+          <div style="padding: 12px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; text-align: center"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">VAULT VALUE</div><div style="font-weight: 700; font-size: 16px; margin-top: 4px">$2.4M</div></div>
+          <div style="padding: 12px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; text-align: center"><div style="font-size: 11px; letter-spacing: .08em; color: #8E8E96">VOLATILITY</div><div style="font-weight: 700; font-size: 16px; margin-top: 4px">27%</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20; overflow: hidden">
+          <div style="padding: 10px 4px; text-align: center"><div style="font-size: 11px; color: #8E8E96">24H</div><div style="font-weight: 600; color: #3DD68C">+1.34%</div></div>
+          <div style="padding: 10px 4px; text-align: center; border-left: 1px solid #17171A"><div style="font-size: 11px; color: #8E8E96">7D</div><div style="font-weight: 600; color: #3DD68C">+9.26%</div></div>
+          <div style="padding: 10px 4px; text-align: center; border-left: 1px solid #17171A"><div style="font-size: 11px; color: #8E8E96">30D</div><div style="font-weight: 600; color: #3DD68C">+5.59%</div></div>
+          <div style="padding: 10px 4px; text-align: center; border-left: 1px solid #17171A"><div style="font-size: 11px; color: #8E8E96">ALL</div><div style="font-weight: 600; color: #3DD68C">+7.02%</div></div>
+        </div>
+        <div style="padding: 2px 2px 6px">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: #B4B4BB"><span>Stocks 50%</span><span>Tokens 50%</span></div>
+          <div style="display: flex; gap: 3px; margin-top: 6px"><span style="flex: 1; height: 4px; border-radius: 2px; background: #F2F2F3"></span><span style="flex: 1; height: 4px; border-radius: 2px; background: #9052F9"></span></div>
+        </div>
+
+        <div style="padding: 16px; border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Use this data</h2>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #3DD68C"><span style="width: 6px; height: 6px; border-radius: 50%; background: #3DD68C"></span>Live</span>
+          </div>
+          <div role="group" aria-label="Access" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 4px; border-radius: 12px; background: #131316">
+            <sc-for list="{{ dtabs }}" as="a" hint-placeholder-count="3">
+              <button type="button" aria-pressed="{{ a.on }}" onClick="{{ a.pick }}" style="border: 0; height: 36px; border-radius: 9px; font-weight: 700; font-size: 13px; white-space: nowrap; background: {{ a.bg }}; color: {{ a.fg }}">{{ a.label }}</button>
+            </sc-for>
+          </div>
+          <div style="border-radius: 12px; background: #060607; border: 1px solid #1F1F23; overflow: hidden">
+            <div style="padding: 8px 14px; border-bottom: 1px solid #17171A; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: #8E8E96">{{ dkind }}</div>
+            <pre style="margin: 0; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; color: #D6D6DA">{{ dcode }}</pre>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <div style="padding: 12px 14px; border-radius: 12px; background: #131316"><div style="font-size: 12px; color: #8E8E96">{{ dv1l }}</div><div style="margin-top: 2px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 20px; white-space: nowrap">{{ dv1 }}</div></div>
+            <div style="padding: 12px 14px; border-radius: 12px; background: #131316"><div style="font-size: 12px; color: #8E8E96">{{ dv2l }}</div><div style="margin-top: 2px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 20px; white-space: nowrap">{{ dv2 }}</div></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3DD68C"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3DD68C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>{{ dcheck }}</div>
+          <p style="margin: 0; font-size: 13px; color: #8E8E96; line-height: 1.5">{{ dnote }}</p>
+          <button type="button" style="border: 0; height: 48px; border-radius: 12px; background: #F2F2F3; color: #0B0B0D; font-weight: 700; font-size: 15px">{{ dcta }}</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+</div>
+<div aria-hidden="true" style="height: 92px"></div>
+<dc-import name="AskWidget" start-open="{{ no }}" hint-size="60px,60px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1480}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tf: '1D', tab: 'Composition', access: 'API' }; }
+  renderVals() {
+    let h = 7;
+    const r = () => { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
+    const N = 72, H = 380, lo = 82, hi = 110;
+    const y = (v) => Math.round((hi - v) / (hi - lo) * H);
+    const closes = []; let v = 100;
+    for (let i = 0; i < N; i++) { v += (r() - 0.5) * 2.6; closes.push(v); }
+    const adj = (107.02 - closes[N - 1]) / N;
+    for (let i = 0; i < N; i++) closes[i] += adj * (i + 1);
+    const candles = closes.map((c, i) => {
+      const o = i ? closes[i - 1] : 100;
+      const hiV = Math.max(o, c) + r() * 0.9, loV = Math.min(o, c) - r() * 0.9;
+      const up = c >= o;
+      return {
+        col: up ? '#3DD68C' : '#FF6B6B', vcol: up ? '#173A28' : '#3E1C1F',
+        wt: y(hiV), wh: Math.max(1, y(loV) - y(hiV)),
+        bt: y(Math.max(o, c)), bh: Math.max(2, y(Math.min(o, c)) - y(Math.max(o, c))),
+        vh: Math.round(10 + r() * 52)
+      };
+    });
+    const grid = [105, 100, 95, 90, 85].map((g) => ({ v: g.toFixed(1), y: y(g), ly: y(g) - 7 }));
+    const tfs = ['15m', '1h', '4h', '1D', '1W'].map((t) => ({ label: t, on: t === this.state.tf ? 'true' : 'false', fg: t === this.state.tf ? '#F2F2F3' : '#8E8E96', pick: () => this.setState({ tf: t }) }));
+    const tabs = ['Composition', 'Rebalances', 'Holders', 'Verification'].map((t) => ({ label: t, on: t === this.state.tab ? 'true' : 'false', fg: t === this.state.tab ? '#F2F2F3' : '#8E8E96', line: t === this.state.tab ? '#9052F9' : 'transparent', pick: () => this.setState({ tab: t }) }));
+    const col = (s) => (s.charAt(0) === '-' ? '#FF6B6B' : '#3DD68C');
+    const comp = [
+      ['NVDA', 'Stock', '25%', '$169.95', '+3.1%', '+11.1%', '/_blob/0d43753d5851ca8eecab4b854b778625', 'On-chain stock', '#4C8DFF'],
+      ['MSFT', 'Stock', '25%', '$512.40', '-0.4%', '+1.2%', '/_blob/91a17ab5a6aa41c8bbc425718857c5dd', 'On-chain stock', '#4C8DFF'],
+      ['BTC.b', 'Token', '25%', '$74,357', '+0.7%', '+3.8%', '/_blob/b55f097c43acce42022b19b1007c2348', 'Avalanche C-Chain', '#E84142'],
+      ['AVAX', 'Token', '15%', '$6.51', '+2.1%', '-2.1%', '/_blob/92e41da104be710567c2d8cdc66fc303', 'Avalanche C-Chain', '#E84142'],
+      ['WETH.e', 'Token', '10%', '$2,318', '-1.1%', '+0.9%', '/_blob/6ca1f2929b21d10905ec3adc5884ba7b', 'Avalanche C-Chain', '#E84142']
+    ].map((a) => ({ t: a[0], k: a[1], w: a[2], px: a[3], d: a[4], m: a[5], c1: col(a[4]), c30: col(a[5]), img: a[6], src: a[7], dot: a[8] }));
+    const ev = {
+      Rebalances: [['Nov 21', 'Version 4 announced: NVDA 25 → 30%, AVAX 15 → 10%. Starts after 48h notice.', 'notice'], ['Oct 02', 'Version 3 settled in 3 auctions. Cost 0.31% of the 1.00% loss budget.', 'v3'], ['Sep 05', 'Version 2 settled in 2 auctions. Cost 0.12%.', 'v2'], ['Aug 21', 'Index created at level 100.00', 'v1']],
+      Holders: [['0x91f0…3c7a', '18.2% of supply', '219 TBB'], ['0x7a3f…c21e', '9.4% of supply', '113 TBB'], ['0x19bd…04aa', '6.1% of supply', '73 TBB'], ['1,201 others', '66.3% of supply', '']],
+      Verification: [['#51,204,331', 'Indexer 107.0214 · IndexLens.level() 107.0214', 'match'], ['#51,204,330', 'Indexer 107.0198 · IndexLens.level() 107.0198', 'match'], ['#51,204,329', 'Indexer 107.0201 · IndexLens.level() 107.0201', 'match'], ['Last 24h', '43,182 blocks checked, 0 mismatches', '100%']]
+    };
+    const events = (ev[this.state.tab] || []).map((e) => ({ when: e[0], what: e[1], ref: e[2] }));
+    const DT = {
+      API: { kind: 'REST · GET', code: '/indexes/TBB', note: 'Level, block, composition and holders. Cached for one block.', cta: 'Copy request' },
+      History: { kind: 'REST · GET', code: '/indexes/TBB/levels?limit=500', note: 'Level history for charts, one point per block that moved it.', cta: 'Copy request' },
+      'On-chain': { kind: 'SOLIDITY · FUJI 43113', code: 'IndexLens.level(TBB)\n// 107.0214e18', note: 'Read the same number from your own contract.', cta: 'Copy call' }
+    };
+    const dcur = DT[this.state.access] || DT.API;
+    const dtabs = Object.keys(DT).map((k) => ({ label: k, on: k === this.state.access ? 'true' : 'false', bg: k === this.state.access ? '#2A2A2F' : 'transparent', fg: k === this.state.access ? '#F2F2F3' : '#8E8E96', pick: () => this.setState({ access: k }) }));
+    return {
+      no: false, candles, grid, lastY: y(107.02), lastLy: y(107.02) - 9, tfs, tabs, comp, events,
+      showComp: this.state.tab === 'Composition', showOther: this.state.tab !== 'Composition',
+      dtabs, dkind: dcur.kind, dcode: dcur.code, dnote: dcur.note, dcta: dcur.cta,
+      dv1l: 'Level', dv1: '107.0214', dv2l: 'Block', dv2: '#51,204,331', dcheck: 'Matches IndexLens at the same block'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import type { VerifyPrivy } from "./privy.js";
+import type { PriceChainNetwork } from "./network.js";
 import type { Address, PublicClient } from "viem";
 import { priceOracleAbi, type PantadoReader } from "@pantado/sdk";
 import { internalPricesSchema, type Asset, type CanonicalPrice, type Deployment, type Profile, type Services } from "@pantado/shared";
@@ -97,6 +98,8 @@ export interface ApiDeps {
   history?: MarketHistory | null;
   /** auto-fund keeper (test USDC + AVAX once per wallet on sign-in); null when not configured. */
   autoFund?: { url: string; secret: string; verifyPrivy?: VerifyPrivy | null } | null;
+  /** Pantado Price Chain (Network page); null when not configured. */
+  priceChain?: PriceChainNetwork | null;
 }
 
 export interface HistCandle {
@@ -118,6 +121,8 @@ export interface MarketHistory {
   changes(): Promise<Map<string, HistChanges>>;
   /** Reference-market 24h volume per asset and the market total (each swap once); null until market-data has a full window. */
   volume?(): Promise<MarketVolume | null>;
+  /** VND per USD used for Vietnamese stocks; null when market-data has none */
+  fx?(): Promise<{ vndPerUsd: number | null }>;
 }
 
 export interface MarketVolume {
@@ -160,6 +165,15 @@ export function marketDataHistory(url: string | undefined): MarketHistory | null
         return { byAsset, total: body.total, windowSec: body.windowSec };
       } catch {
         return null;
+      }
+    },
+    async fx() {
+      try {
+        const r = await fetch(new URL("/internal/fx", url), { signal: AbortSignal.timeout(2000) });
+        const body = (await r.json()) as { vndPerUsd?: unknown };
+        return { vndPerUsd: num(body.vndPerUsd) && body.vndPerUsd > 0 ? body.vndPerUsd : null };
+      } catch {
+        return { vndPerUsd: null };
       }
     },
     async changes() {

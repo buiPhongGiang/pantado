@@ -141,7 +141,7 @@ async function main(): Promise<void> {
   const build = spawnSync("pnpm", ["exec", "next", "build", "--webpack"], { cwd: join(root, "apps/web"), env: { ...process.env, ...webEnv }, encoding: "utf8" });
   if (build.status !== 0) throw new Error(`web build failed: ${build.stdout}\n${build.stderr}`);
   start("pnpm", ["exec", "next", "start", "-p", String(PORTS.web)], join(root, "apps/web"), webEnv);
-  await waitHttp(`http://127.0.0.1:${PORTS.web}/marketplace`, 300_000);
+  await waitHttp(`http://127.0.0.1:${PORTS.web}/`, 300_000);
 
   console.log("stack ready");
   keepAlive(ix, env);

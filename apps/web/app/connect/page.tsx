@@ -1,5 +1,5 @@
-import Connect from "../../src/screens/connect";
+import ConnectView from "../../src/ui/connect-view";
 
 export default function Page() {
-  return <Connect />;
+  return <ConnectView />;
 }

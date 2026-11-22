@@ -1,12 +1,13 @@
 /**
- * Creates the demo indexes in config/indexes.contest.json (idempotent: existing tickers are skipped), then the
- * listed follow-up buys (each once: skipped when that wallet already holds the index).
+ * Creates the demo indexes in config/indexes.contest.json (idempotent: existing tickers are skipped).
+ * With an IndexRegistry in the deployment (B101) each index is defined as data: no USDC, no buys, the level follows
+ * published prices. Older deployments without it use the legacy vault path (create-and-buy, then the listed buys).
  * Owner "deployer" → DEPLOYER_PRIVATE_KEY, "agent-manager" → AGENT_MANAGER_KEY, "demo-N" → DEMO_WALLET_N.
  * Test USDC is minted by the deployer (USDC owner); demo wallets get a little gas AVAX from the deployer.
  * Testnet keys only. Env: PANTADO_PROFILE, EXECUTION_RPC_URL (optional).
  */
 import { encodeFunctionData, erc20Abi, keccak256, parseEther, parseUnits, toBytes, type Account, type Address, type Hex } from "viem";
-import { indexFactoryAbi, testERC20Abi, toPantadoError, tx, type TxRequest } from "@pantado/sdk";
+import { indexFactoryAbi, indexRegistryAbi, testERC20Abi, toPantadoError, tx, type TxRequest } from "@pantado/sdk";
 import { createChainContext, testnetAccount } from "@pantado/service-kit";
 import { loadDemoIndexes, loadParams } from "@pantado/shared";
 
@@ -18,7 +19,8 @@ async function main(): Promise<void> {
   const ctx = createChainContext();
   const deployer = testnetAccount("DEPLOYER_PRIVATE_KEY", ctx.chain.id);
   const c = ctx.deployment.contracts;
-  const creationFee = BigInt(loadParams().factory.creationFeeUsdc) * 10n ** 6n;
+  const params = loadParams();
+  const creationFee = BigInt(params.factory.creationFeeUsdc) * 10n ** 6n;
   const accounts = new Map<string, Account>([["deployer", deployer]]);
   const who = (name: string): Account | null => {
     const known = accounts.get(name);
@@ -48,10 +50,45 @@ async function main(): Promise<void> {
     await send(a, approve);
   };
 
+  const registry = c.indexRegistry;
   for (const ix of loadDemoIndexes().indexes) {
     const owner = who(ix.owner ?? "deployer");
     if (!owner) {
       console.log(`skip ${ix.ticker}: no key for ${ix.owner}`);
+      continue;
+    }
+    if (registry) {
+      const taken = await ctx.publicClient.readContract({ address: registry, abi: indexRegistryAbi, functionName: "isTickerTaken", args: [ix.ticker] });
+      if (taken) {
+        console.log(`skip create ${ix.ticker} (exists)`);
+        continue;
+      }
+      const assets = Object.keys(ix.components).map((id) => {
+        const a = ctx.deployment.assets[id];
+        if (!a) throw new Error(`${ix.id}: ${id} not deployed`);
+        return a;
+      });
+      try {
+        await gasUp(owner);
+        await send(
+          owner,
+          tx.defineIndex(registry, {
+            name: ix.name,
+            ticker: ix.ticker,
+            description: ix.description ?? "",
+            assets,
+            weightsBps: Object.values(ix.components),
+            isPublic: ix.visibility === "public",
+            mode: MODE[ix.mode],
+            driftBps: ix.mode === "Auto" ? (ix.driftBps ?? params.rebalancer.driftBps) : 0,
+            intervalSec: ix.mode === "Auto" ? BigInt(params.registry.intervalSec) : 0n,
+          }),
+        );
+        console.log(`defined ${ix.ticker} (${ix.visibility}) owner ${owner.address}, no deposit`);
+      } catch (e) {
+        console.error(`${ix.ticker}: ${toPantadoError(e).message}`);
+        process.exitCode = 1;
+      }
       continue;
     }
     if (!(await ctx.reader.isTickerTaken(ix.ticker))) {

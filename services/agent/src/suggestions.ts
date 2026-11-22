@@ -64,8 +64,8 @@ export function snapshotOf(board: BoardRow[]): Record<string, unknown> {
   };
 }
 
-export const SUGGESTIONS_PROMPT = `You write the daily question suggestions on the home screen of Pantado's Ask (an index trading
-app: tokenized stocks and Avalanche tokens, indexes held as one token). From the market snapshot you get, write exactly
+export const SUGGESTIONS_PROMPT = `You write the daily question suggestions on the home screen of Pantado's Ask (an index and data
+layer: tokenized stocks, Vietnamese stocks and Avalanche tokens, indexes computed from published prices; nothing is traded). From the market snapshot you get, write exactly
 four questions for each tab:
 - Today: the day's most notable moves across stocks, tokens and indexes.
 - Indexes: Pantado's public indexes (compositions, levels, 30-day moves, drafting or comparing baskets).
@@ -75,7 +75,7 @@ Rules:
 - Each question carries one insight from the snapshot: a real move, volume or level, with its number exactly as given
   (rounded to one decimal at most). Never invent a number, a reason, news or a buyer.
 - Each must be answerable from Pantado's data: prices and changes, price history, volatility and drawdown, volume,
-  index compositions and levels, comparisons, backtests, drafting an index. No predictions, no "should I buy".
+  index compositions and levels, comparisons, backtests, drafting an index. No predictions, nothing about buying, selling, fees or holding.
 - Under 90 characters, plain English, no emoji.
 - When a question is about one listed asset, set "asset" to its id and write "text" as what follows its name
   (e.g. {"asset": "coq", "text": "fell 18.2% this week. How volatile has it been over 90 days?"}); else asset is null.

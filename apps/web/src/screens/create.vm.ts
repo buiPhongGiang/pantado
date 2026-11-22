@@ -2,9 +2,8 @@ import { DOWN, UP, withInitials } from "../lib/fmt";
 import type { Scope } from "../lib/tpl";
 import { logoAvatar, logoFill } from "../lib/logos";
 import type { Me } from "../lib/chrome";
-import type { AssetView, CreateQuote } from "./asset.api";
+import type { AssetView } from "./asset.api";
 import { errorNotice, staleNotice, txLine, wrongNetworkNotice, type Notice, type TxLine, type TxStateLike } from "./asset.states";
-import type { QuoteState } from "./asset.vm";
 import type { Backtest } from "./create.metrics";
 import type { Mode, PresetKey } from "./create.draft";
 
@@ -13,7 +12,6 @@ export type Vis = "Private" | "Public";
 export type Step = "edit" | "review" | "done";
 
 export const TICKER_RE = /^[A-Z0-9]{2,6}$/;
-export const MIN_FIRST_BUY = 100;
 export const MAX_ASSETS = 20;
 
 export interface CreateState {
@@ -27,7 +25,6 @@ export interface CreateState {
   vis: Vis;
   mode: Mode;
   drift: number; // θ in percent (10–200)
-  first: string;
   step: Step;
 }
 
@@ -35,13 +32,12 @@ export interface CreateInput {
   s: CreateState;
   assets: AssetView[];
   tickerTaken: boolean | null;
-  creationFee: bigint | null; // USDC base units (factory limits or quote)
   presetError: string | null;
   backtest: Backtest | null;
-  slip: number | null;
-  quote: QuoteState<CreateQuote>;
   tx: TxStateLike;
-  created: { index: string | null; units: string | null } | null;
+  created: { index: string | null } | null;
+  /** editing an existing data index (Create with `?edit=`): a new basket for it, applied now */
+  editing: { ticker: string; name: string } | null;
   wallet: { connected: boolean; chainOk: boolean };
   env: { network: string; explorer: string; nowSec: number; deployed: boolean };
   actions: {
@@ -60,17 +56,14 @@ export interface CreateInput {
 const KIND: Record<KindFilter, AssetView["kind"] | null> = { All: null, Stocks: "stock", Tokens: "token" };
 const GREY = "#8E8E96";
 
-const usdc = (raw: bigint | string | null | undefined, dp = 2): string | null => (raw === null || raw === undefined ? null : (Number(BigInt(raw)) / 1e6).toFixed(dp));
-/** "5" for whole amounts, "5.50" otherwise. */
-const usdcShort = (raw: bigint): string => {
-  const n = Number(raw) / 1e6;
-  return Number.isInteger(n) ? String(n) : n.toFixed(2);
-};
+/** Rebalance choices of a data index (IndexRegistry): never, the creator publishes, or Auto (anyone pokes). */
+export const MODES: Mode[] = ["Off", "Manual", "Auto"];
+/** Auto interval offered by the app (contracts/config/params.json registry.intervalSec). */
+export const AUTO_INTERVAL_DAYS = 30;
 
 /** First failing rule as the reference CTA label, or null when the form is valid. */
 export function validate(s: CreateState, tickerTaken: boolean | null): string | null {
   const total = s.picked.reduce((x, id) => x + (s.w[id] ?? 0), 0);
-  const first = Number(s.first) || 0;
   if (total !== 100) return "Weights must total 100%";
   if (s.picked.length < 2) return "Add at least 2 assets";
   if (s.picked.some((id) => (s.w[id] ?? 0) < 1)) return "Every asset needs at least 1%";
@@ -78,7 +71,6 @@ export function validate(s: CreateState, tickerTaken: boolean | null): string | 
   if (!TICKER_RE.test(s.ticker)) return "Ticker must be 2–6 characters, A–Z or 0–9.";
   if (tickerTaken) return "This ticker is already taken.";
   if (!s.name.trim()) return "Add a name";
-  if (first < MIN_FIRST_BUY) return "First buy is at least 100 USDC";
   return null;
 }
 
@@ -121,42 +113,38 @@ export function createVM(i: CreateInput): Scope {
   const total = basket.reduce((x, b) => x + b.w, 0);
   const t = total || 1;
   const stocks = sel.filter((a) => a.kind === "stock").reduce((x, a) => x + (s.w[a.id] ?? 0), 0);
-  const first = Number(s.first) || 0;
   const invalid = validate(s, i.tickerTaken);
   const isPublic = s.vis === "Public";
-  const ticker = s.ticker.toUpperCase();
+  const ed = i.editing;
+  const ticker = ed ? ed.ticker : s.ticker.toUpperCase();
   const bt = i.backtest;
   const pctS = (f: number, dp: number, sign: boolean): string => `${sign && f >= 0 ? "+" : ""}${(f * 100).toFixed(dp)}%`;
 
-  const qd = i.quote.data;
-  const qErr = i.quote.error;
-  const fee = qd ? BigInt(qd.creationFee) : i.creationFee;
-  const unitsN = qd ? Number(BigInt(qd.units)) / 1e18 : null;
-  const createdUnits = i.created?.units ? Number(BigInt(i.created.units)) / 1e18 : unitsN;
+  const mode: Mode = s.mode;
   const wrongNet = i.wallet.connected && !i.wallet.chainOk;
   const notices: Notice[] = [];
   if (wrongNet) notices.push(wrongNetworkNotice(i.env.network));
   if (!i.env.deployed) notices.push(errorNotice("Creating is not available: Pantado is not deployed on this network yet."));
   if (i.presetError) notices.push({ tone: "amber", title: i.presetError, body: "Your weights were kept." });
   if (i.tickerTaken && s.step === "edit") notices.push(errorNotice("This ticker is already taken."));
+  // the starting units are set from fresh prices: a stale price blocks the create
   const staleA = sel.find((a) => a.price?.fresh === false);
-  if (s.step === "review" && (qErr?.code === "PriceStale" || staleA)) {
-    const sym = staleA?.displaySymbol ?? "An asset";
-    notices.push(staleNotice(sym, "this basket", staleA?.price?.ts ?? null, i.env.nowSec, false));
-  } else if (s.step === "review" && qErr) notices.push(errorNotice(qErr.message));
+  if (s.step === "review" && staleA) notices.push(staleNotice(staleA.displaySymbol, "this basket", staleA.price?.ts ?? null, i.env.nowSec, false));
   const status: TxLine | null =
     s.step === "done"
       ? null
       : txLine(
           i.tx,
-          { pendingSub: `One signature creates ${ticker} and buys every asset`, confirmed: `Created ${ticker}`, failed: "Create failed" },
+          ed
+            ? { pendingSub: `One signature publishes the new basket of ${ticker}.`, confirmed: `Updated ${ticker}`, failed: "Update failed" }
+            : { pendingSub: `One signature defines ${ticker}. Nothing is deposited.`, confirmed: `Created ${ticker}`, failed: "Create failed" },
           i.env.network,
           i.env.explorer,
         );
   const confirm = (): void => {
     if (wrongNet) return actions.switchChain();
     if (!i.wallet.connected) return actions.connect();
-    if (!qd || i.tx.status === "pending" || notices.length > 0) return;
+    if (i.tx.status === "pending" || notices.length > 0) return;
     actions.confirm();
   };
 
@@ -191,24 +179,27 @@ export function createVM(i: CreateInput): Scope {
     retCol: bt ? (bt.ret >= 0 ? UP : DOWN) : GREY,
     vol: bt ? `${(bt.vol * 100).toFixed(0)}%` : "—",
     dd: bt ? pctS(bt.dd, 1, false) : "—",
-    slip: i.slip === null ? "—" : `${(i.slip * 100).toFixed(2)}%`,
     disabled: invalid ? "true" : "false",
     created: s.step === "done" || notices.length > 0 || status !== null,
     isDone: s.step === "done",
     reviewing: s.step === "review",
-    createdText: `${isPublic ? "Published " : "Created "}${ticker}. You hold ${createdUnits === null ? "—" : createdUnits.toFixed(2)} units.`,
+    createdText: ed ? `Updated ${ticker}. The level carried over.` : `${isPublic ? "Published " : "Created "}${ticker} at level 100.`,
     createdSub: isPublic
-      ? "It is listed in the Marketplace. You earn 0.20% of every buy and sell."
+      ? "It is listed in the Marketplace for everyone to follow."
       : "Private: it is not listed in the Marketplace. Only you see it, in Portfolio › Your indexes. You can make it public later.",
     _href: i.created?.index ? { IndexDetail: `/index/${i.created.index}` } : {},
+    // no trading (owner): nobody else buys or sells the index, so there is no creator fee to promise
+    earnNote: "Listed in the Marketplace for everyone to follow",
     visLabel: isPublic ? "Public" : "Private",
-    modeSummary: s.mode === "Auto" ? `Auto at ${s.drift}% drift` : s.mode,
-    firstS: `${first.toFixed(2)} USDC`,
-    creationFeeS: fee === null ? "—" : `${usdc(fee)} USDC`,
-    feeLine: `Creation fee ${fee === null ? "—" : usdcShort(fee)} USDC`,
-    tradeFee: qd ? `${usdc(qd.tradeFee)} USDC` : "—",
-    payS: qd ? `${usdc(qd.totalUsdc)} USDC` : "—",
-    unitsS: `${unitsN === null ? "—" : unitsN.toFixed(2)} ${ticker} at level 100`,
+    modeSummary: mode === "Auto" ? `Auto at ±${s.drift}% drift or every ${AUTO_INTERVAL_DAYS} days` : mode === "Manual" ? "You publish new weights" : "Off",
+    // indexes are data (B101): nothing is deposited, bought or held
+    feeLine: "No deposit · network fee only",
+    reviewTitle: ed ? `Review: update ${ticker}` : `Review: ${isPublic ? "publish" : "create"} ${ticker || "index"}`,
+    receiveLabel: ed ? "Level" : "Starting level",
+    unitsS: ed ? "Carries over" : "100.00",
+    reviewNote: ed
+      ? "One signature publishes the new basket now. The level carries over and then follows the new assets and weights. Nothing is traded."
+      : "One signature defines the index. Nothing is deposited, bought or held: the level starts at 100 and follows the published price of every asset in the basket.",
     name: s.name,
     ticker: s.ticker,
     onTicker: (e: { target: { value: string } }) => actions.set({ ticker: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) }),
@@ -218,22 +209,25 @@ export function createVM(i: CreateInput): Scope {
       if (!invalid) actions.review();
     },
     cta: !invalid
-      ? { bg: "#F2F2F3", fg: "#0B0B0D", label: `Review: ${isPublic ? "publish" : "create"} and buy` }
+      ? { bg: "#F2F2F3", fg: "#0B0B0D", label: ed ? "Review: update" : `Review: ${isPublic ? "publish" : "create"}` }
       : { bg: "#1F1F23", fg: GREY, label: invalid },
-    modes: (["Off", "Manual", "Auto"] as Mode[]).map((m) => ({
+    modes: MODES.map((m) => ({
       label: m,
-      on: m === s.mode ? "true" : "false",
-      bg: m === s.mode ? "#2A2A2F" : "transparent",
-      fg: m === s.mode ? "#F2F2F3" : GREY,
+      on: m === mode ? "true" : "false",
+      bg: m === mode ? "#2A2A2F" : "transparent",
+      fg: m === mode ? "#F2F2F3" : GREY,
       pick: () => actions.set({ mode: m }),
     })),
-    modeText: { Off: "Weights move with prices. The basket never changes.", Manual: "You publish new weights. Holders get 48h notice.", Auto: "Rebalances itself when an asset drifts too far." }[s.mode],
-    isAuto: s.mode === "Auto",
+    modeText:
+      mode === "Off"
+        ? "Weights move with prices. The basket never changes."
+        : mode === "Manual"
+          ? "You publish new weights, at most once a day, at once or after a notice. The level carries over."
+          : "Returns to its targets when an asset drifts too far. Anyone can apply it; nothing is traded.",
+    isAuto: mode === "Auto",
     drift: s.drift,
     onDrift: (e: { target: { value: string } }) => actions.set({ drift: Number(e.target.value) }),
     driftEx: `A 20% target triggers below ${(20 * (1 - s.drift / 100)).toFixed(0)}% or above ${(20 * (1 + s.drift / 100)).toFixed(0)}%.`,
-    first: s.first,
-    onFirst: (e: { target: { value: string } }) => actions.set({ first: e.target.value }),
     notices,
     status,
     me: i.me,

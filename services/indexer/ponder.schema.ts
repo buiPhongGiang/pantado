@@ -32,7 +32,9 @@ export const priceUpdates = onchainTable(
 );
 
 export const indexes = onchainTable("indexes", (t) => ({
-  id: t.hex().primaryKey(), // vault address
+  id: t.hex().primaryKey(), // vault address, or the IndexRegistry id of a data index
+  /** "vault": holds a basket bought with USDC (legacy). "data": defined on the IndexRegistry, level from prices only. */
+  model: t.text().notNull(),
   ticker: t.text().notNull(),
   name: t.text().notNull(),
   description: t.text().notNull(),
@@ -42,6 +44,10 @@ export const indexes = onchainTable("indexes", (t) => ({
   driftBps: t.integer().notNull(),
   pendingMode: t.integer(),
   pendingAt: t.bigint(),
+  /** data index, Auto: rebalance at least this often (seconds) */
+  intervalSec: t.bigint(),
+  /** data index: rebalance scheduled with notice, applied by anyone with `poke` from `at` */
+  pending: t.json().$type<{ assets: `0x${string}`[]; weightsBps: number[]; reason: string; at: string } | null>(),
   assets: t.json().$type<`0x${string}`[]>().notNull(),
   targetBps: t.json().$type<number[]>().notNull(),
   version: t.integer().notNull(),

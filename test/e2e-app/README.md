@@ -3,7 +3,7 @@
 | What | Command |
 |---|---|
 | Local stack (Anvil, deploy, seed, indexer, market-data seed mode, api, web) | `pnpm stack:anvil` (`WEB_PORT`, `STACK_KEEPERS=1` adds pusher / trigger / filler, `STACK_WEB=0` skips the web build) |
-| UI smoke on Anvil (Playwright, every screen, trade flows) | `pnpm e2e:anvil` |
+| Index Layer on Anvil (Playwright, desktop and mobile routes, index creation and publication, Ask widget) | `pnpm e2e:anvil` |
 | Contest acceptance (spec §14, steps 1–11) | `pnpm acceptance` |
 
 ## Acceptance (`acceptance.ts`)

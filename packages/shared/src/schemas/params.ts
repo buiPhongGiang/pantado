@@ -58,9 +58,22 @@ export const paramsSchema = z
     swapRouter: z.strictObject({
       swapFeeBps: bpsSchema,
     }),
+    /** IndexRegistry: indexes as data (no deposit). Asset count / weight limits come from `factory`. */
+    registry: z.strictObject({
+      maxPublicPerCreator: pos,
+      minRebalanceSec: pos,
+      /** shortest Auto interval; Auto drift bounds come from `rebalancer.driftMinBps / driftMaxBps` */
+      minIntervalSec: pos,
+      /** default Auto interval offered by the app */
+      intervalSec: pos,
+      maxNoticeSec: pos,
+      /** an asset without a price for this long is dropped from every index */
+      dropStaleSec: pos,
+    }),
     demoOverrides: z.strictObject({
       noticeSec: pos,
       modeChangeDelaySec: pos,
+      minRebalanceSec: pos,
     }),
   })
   .superRefine((p, ctx) => {

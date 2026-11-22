@@ -1,238 +1,177 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, keccak256, parseEther, toBytes, type Address, type Hex } from "viem";
+import { createPublicClient, erc20Abi, http, keccak256, toBytes, type Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { foundry } from "viem/chains";
-import { indexFactoryAbi, testERC20Abi, tx } from "@pantado/sdk";
+import { indexRegistryAbi } from "@pantado/sdk";
 import { ANVIL_KEYS } from "@pantado/sdk/testing";
 import { findRepoRoot, type Deployment } from "@pantado/shared";
 
-/** P7 gate: Playwright smoke on Anvil — every screen; create with review, buy, sell, redeem, swap, private → public. */
-
-const root = findRepoRoot();
-// the stack (stack.ts, Playwright webServer) writes .stack.json once it is up
-let stack = { rpcUrl: "", deployment: "" };
-let dep = {} as Deployment;
-let pub = createPublicClient({ chain: foundry, transport: http("http://127.0.0.1:1") });
-let c = {} as Deployment["contracts"];
-function loadStack(): void {
-  stack = JSON.parse(readFileSync(join(root, "test/e2e-app/.stack.json"), "utf8")) as typeof stack;
-  dep = JSON.parse(readFileSync(stack.deployment, "utf8")) as Deployment;
-  pub = createPublicClient({ chain: foundry, transport: http(stack.rpcUrl) });
-  c = dep.contracts;
-}
-const deployer = privateKeyToAccount(ANVIL_KEYS[0]);
-const user = privateKeyToAccount(ANVIL_KEYS[1]); // the app's dev wallet (NEXT_PUBLIC_DEV_WALLET_KEY)
-
-async function send(key: Hex, req: { to: Address; data: Hex; value?: bigint }): Promise<void> {
-  const account = privateKeyToAccount(key);
-  const w = createWalletClient({ account, chain: foundry, transport: http(stack.rpcUrl) });
-  await pub.waitForTransactionReceipt({ hash: await w.sendTransaction({ ...req, account, chain: foundry }) });
-}
-const indexByTicker = (t: string): Promise<Address> =>
-  pub.readContract({ address: c.factory, abi: indexFactoryAbi, functionName: "indexByTicker", args: [keccak256(toBytes(t))] });
-const balance = (token: Address, who: Address = user.address): Promise<bigint> =>
-  pub.readContract({ address: token, abi: erc20Abi, functionName: "balanceOf", args: [who] });
-async function until(fn: () => Promise<boolean>, ms = 60_000): Promise<void> {
-  const end = Date.now() + ms;
-  while (Date.now() < end) {
-    if (await fn()) return;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  throw new Error("condition not met");
+function readStack() {
+  const stackFile = join(findRepoRoot(), "test/e2e-app/.stack.json");
+  const { rpcUrl, deployment } = JSON.parse(readFileSync(stackFile, "utf8")) as { rpcUrl: string; deployment: string };
+  const { contracts } = JSON.parse(readFileSync(deployment, "utf8")) as Deployment;
+  if (!contracts.indexRegistry) throw new Error("The Anvil stack has no IndexRegistry deployment.");
+  const registry = contracts.indexRegistry;
+  const client = createPublicClient({ chain: foundry, transport: http(rpcUrl) });
+  const indexByTicker = (ticker: string): Promise<Address> =>
+    client.readContract({ address: registry, abi: indexRegistryAbi, functionName: "indexByTicker", args: [keccak256(toBytes(ticker))] });
+  return { client, contracts, registry, indexByTicker };
 }
 
-function watchErrors(page: Page): string[] {
-  const errs: string[] = [];
-  page.on("pageerror", (e) => errs.push(e.message));
-  return errs;
-}
+const user = privateKeyToAccount(ANVIL_KEYS[1]); // the app's local Anvil wallet
 
 async function connect(page: Page): Promise<void> {
   await page.goto("/connect");
-  await page.locator("[data-connect]").first().click();
-  await expect(page.locator("body.in")).toHaveCount(1);
+  await page.getByRole("button", { name: "Core", exact: true }).click();
+  await expect(page.getByLabel("Account menu")).toBeVisible();
 }
 
-test.describe.configure({ mode: "serial" });
+async function openAsk(page: Page) {
+  await page.getByRole("button", { name: "Open Ask PantadoAI" }).click();
+  return page.getByRole("dialog", { name: "Ask PantadoAI" });
+}
 
-test.beforeAll(async () => {
-  loadStack();
-  // fund the dev wallet once: test USDC (deployer is the owner) + AVAX for gas
-  await send(ANVIL_KEYS[0], { to: c.usdc, data: encodeFunctionData({ abi: testERC20Abi, functionName: "mint", args: [user.address, 50_000_000_000n] }) });
-  await send(ANVIL_KEYS[0], { to: user.address, data: "0x", value: parseEther("1") });
-  void deployer;
-});
-
-test("every screen renders without errors", async ({ page }) => {
-  const errs = watchErrors(page);
-  const tbb = await indexByTicker("TBB");
+test("renders the Index Layer routes on desktop and mobile", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const { indexByTicker } = readStack();
+  const seeded = await indexByTicker("TBB");
   const routes: [string, RegExp][] = [
-    ["/", /Ask/],
-    ["/ask", /Ask/],
-    ["/marketplace", /Marketplace/],
-    ["/swap", /Swap/],
-    ["/create", /Create/],
-    ["/portfolio", /Portfolio/],
-    ["/profile", /Creator|Profile/],
-    ["/connect", /Connect/],
-    ["/states", /Error and empty states/],
-    ["/asset/nvda", /NVDA/],
-    [`/index/${tbb}`, /Tech \+ BTC Balanced/],
-    [`/index/${tbb}/review`, /Tech \+ BTC Balanced/],
-    [`/version/${tbb}`, /version/i],
-    [`/redeem/${tbb}`, /Redeem/],
+    ["/", /^Market$/],
+    ["/create", /^Create index$/],
+    ["/workspace", /^Workspace$/],
+    ["/network", /^Network$/],
+    ["/connect", /^Connect to Pantado$/],
+    ["/asset/nvda", /^NVDA$/],
+    [`/index/${seeded}`, /^Tech \+ BTC Balanced$/],
+    [`/version/${seeded}`, /Propose .*version/i],
   ];
-  for (const [path, text] of routes) {
-    await page.goto(path);
-    await expect(page.locator("#app")).toContainText(text);
-    await expect(page.locator("nav[aria-label='Main']").first()).toBeVisible(); // left rail on every screen
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    for (const [path, heading] of routes) {
+      const response = await page.goto(path);
+      expect(response?.ok(), path).toBe(true);
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+      await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Open Ask PantadoAI" })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), path).toBe(true);
+    }
   }
-  // live data reached the Marketplace (seeded public indexes, not the reference's mock rows)
-  await page.goto("/marketplace");
-  await expect(page.locator("#app")).toContainText("Magnificent 7");
-  await expect(page.locator("#app")).not.toContainText("Crypto Beta");
-  await expect(page.locator("#app")).not.toContainText("My basket"); // private index never listed
-  expect(errs).toEqual([]);
+
+  await page.goto("/");
+  const market = page.locator("#app");
+  await expect(market).toContainText("Magnificent 7");
+  await expect(market).not.toContainText("My basket");
+  expect(errors).toEqual([]);
 });
 
-test("buy and sell an index from its page", async ({ page }) => {
+test("creates a private index without spending USDC and makes it public", async ({ page }) => {
+  const { client, contracts, registry, indexByTicker } = readStack();
+  const balance = () => client.readContract({ address: contracts.usdc, abi: erc20Abi, functionName: "balanceOf", args: [user.address] });
+  const usdcBefore = await balance();
+  const draft = Buffer.from(JSON.stringify({
+    name: "E2E Basket",
+    ticker: "E2EB",
+    description: "e2e",
+    components: ["nvda", "btcb"],
+    weights: [60, 40],
+    mode: "Manual",
+    preset: "custom",
+  })).toString("base64url");
+
   await connect(page);
-  const tbb = await indexByTicker("TBB");
-  await page.goto(`/index/${tbb}`);
-  const trade = page.locator("[aria-label='Index stats and trade']");
-  await trade.locator("input[type=number]").first().fill("250");
-  await page.getByText("Buy index", { exact: false }).first().click();
-  await until(async () => (await balance(tbb)) > 0n);
-  const units = await balance(tbb);
+  await page.goto(`/create?draft=${draft}`);
+  const app = page.locator("#app");
+  await expect(page.getByLabel("Account menu")).toContainText("0x7099");
+  await expect(app).toContainText("Network fee only");
+  await expect(app).not.toContainText(/first buy|USDC/i);
+  await page.getByRole("radio", { name: /^Private/ }).click();
+  await page.getByRole("button", { name: "Review: create", exact: true }).click();
+  const review = page.getByRole("dialog", { name: "Review: create E2EB" });
+  await expect(review).toBeVisible();
+  await page.getByRole("button", { name: "Confirm in wallet", exact: true }).click();
+  await expect(app.getByText(/Created E2EB/)).toBeVisible();
 
-  await trade.locator("[aria-label='Side']").getByText("Sell", { exact: true }).click();
-  await trade.locator("input[type=number]").first().fill(String(Number(units) / 1e18 / 3));
-  await page.getByText(/^Sell for/).first().click();
-  await until(async () => (await balance(tbb)) < units);
+  const index = await indexByTicker("E2EB");
+  const level = await client.readContract({ address: registry, abi: indexRegistryAbi, functionName: "levelOf", args: [index] });
+  expect(Number(level) / 1e18).toBeCloseTo(100, 6);
+  expect(await balance()).toBe(usdcBefore);
+
+  await page.goto("/");
+  await expect(app).toContainText("Magnificent 7");
+  await expect(app).not.toContainText("E2E Basket");
+  await page.goto(`/index/${index}`);
+  await page.getByRole("button", { name: "Make public", exact: true }).click();
+  await expect.poll(async () => {
+    const row = await client.readContract({ address: registry, abi: indexRegistryAbi, functionName: "indexOf", args: [index] });
+    return row.isPublic;
+  }).toBe(true);
+  await page.goto("/");
+  await expect(app).toContainText("E2E Basket", { timeout: 60_000 });
 });
 
-test("redeem from Portfolio", async ({ page }) => {
-  await connect(page);
-  const tbb = await indexByTicker("TBB");
-  const before = await balance(tbb);
-  expect(before).toBeGreaterThan(0n);
-  await page.goto("/portfolio");
-  await page.locator(`a[href^='/redeem/' i][href$='${tbb.slice(-8).toLowerCase()}' i]`).first().click();
-  await expect(page).toHaveURL(new RegExp(`/redeem/${tbb}`, "i"));
-  await page.getByRole("button", { name: /^Redeem / }).first().click();
-  await until(async () => (await balance(tbb)) === 0n);
-  expect(await balance(dep.assets.nvda as Address)).toBeGreaterThan(0n); // in-kind
-});
-
-test("swap with search", async ({ page }) => {
-  await connect(page);
-  await page.goto("/swap");
-  await page.getByRole("button", { name: "Choose token" }).last().click();
-  await page.getByPlaceholder("Search ticker or paste contract address").fill(dep.assets.aapl as string);
-  await page.getByText("AAPL", { exact: true }).first().click();
-  const quoted = page.waitForResponse((r) => r.url().includes("/quote/swap") && r.request().postData()?.includes('"amountIn":"100000000"') === true);
-  await page.locator("input[type=number]").first().fill("100");
-  await quoted;
-  await page.getByRole("button", { name: "Swap", exact: true }).click();
-  await until(async () => (await balance(dep.assets.aapl as Address)) > 0n);
-  // unknown contract address → registry only
-  await page.getByRole("button", { name: "Choose token" }).last().click();
-  await page.getByPlaceholder("Search ticker or paste contract address").fill("0x000000000000000000000000000000000000bEEF");
-  await expect(page.locator("#app")).toContainText("No listed asset at this contract address");
-});
-
-test("create with review (one signature), then private → public", async ({ page }) => {
-  await connect(page);
-  await page.goto(`/create?draft=${Buffer.from(JSON.stringify({ name: "E2E Basket", ticker: "E2EB", description: "e2e", components: ["nvda", "btcb"], weights: [60, 40], mode: "Manual", preset: "custom" })).toString("base64url")}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("[aria-label='Account menu']")).toContainText("0x7099");
-  await page.locator("[aria-label='Visibility']").getByText("Private", { exact: true }).click();
-  const reviewQuote = page.waitForResponse((r) => r.url().includes("/quote/create") && r.request().postData()?.includes('"usdcIn":"100000000"') === true);
-  await page.getByText(/^Review: (create|publish) and buy/).click();
-  await reviewQuote;
-  await expect(page.locator("#app")).toContainText(/nothing is created/i);
-  await page.getByRole("button", { name: "Confirm in wallet" }).click();
-  await until(async () => !/^0x0{40}$/.test(await indexByTicker("E2EB")));
-  const idx = await indexByTicker("E2EB");
-  expect(await balance(idx)).toBeGreaterThan(0n);
-
-  await page.goto("/marketplace");
-  await expect(page.locator("#app")).not.toContainText("E2E Basket");
-  await page.goto(`/index/${idx}`);
-  await expect(page.locator("#app")).toContainText("Only you");
-  await page.getByText("Make public", { exact: true }).first().click();
-  await until(async () => (await pub.readContract({ address: c.factory, abi: indexFactoryAbi, functionName: "indexInfo", args: [idx] }))[1]);
-  await page.goto("/marketplace");
-  await expect(page.locator("#app")).toContainText("E2E Basket");
-  void tx;
-});
-
-test("delete a chat from the Ask history (two presses), gone after reload", async ({ page }) => {
-  const errs = watchErrors(page);
-  await connect(page);
-  // seed two finished conversations into this wallet's history
-  await page.evaluate((owner) => {
-    const now = Date.now();
-    const conv = (id: string, title: string) => ({ id, title, created: now, updated: now, turns: [{ q: title, mode: "auto", text: "ok", cards: [], meta: null, status: "done" }] });
-    localStorage.setItem(`pantado-ask:wallet:${owner}`, JSON.stringify([conv("e2e-a", "E2E keep me"), conv("e2e-b", "E2E delete me")]));
-  }, user.address.toLowerCase());
-  await page.goto("/ask?c=e2e-b");
-  const chats = page.locator(".chats");
-  await expect(chats).toContainText("E2E delete me");
-  const del = page.getByRole("button", { name: "Delete “E2E delete me”" });
-  await del.click();
-  await expect(chats).toContainText("E2E delete me"); // first press only arms it
-  await page.getByRole("button", { name: "Confirm delete “E2E delete me”" }).click();
-  await expect(chats).not.toContainText("E2E delete me");
-  await expect(chats).toContainText("E2E keep me");
-  await expect(page).toHaveURL(/\/ask$/);
-  await page.reload();
-  await expect(chats).toContainText("E2E keep me");
-  await expect(chats).not.toContainText("E2E delete me");
-  expect(errs).toEqual([]);
-});
-
-test("the Ask home lists saved chats and reopens one", async ({ page }) => {
-  const errs = watchErrors(page);
+test("filters and reopens chats from the connected wallet in Ask", async ({ page }) => {
   await page.goto("/");
   await page.waitForFunction(() => localStorage.getItem("pantado-ask-session"));
-  await page.evaluate((owner) => {
-    const s = JSON.parse(localStorage.getItem("pantado-ask-session") ?? "null") as { id: string };
+  await page.evaluate((address) => {
     const now = Date.now();
-    const conv = (id: string, title: string) => ({ id, title, created: now, updated: now, turns: [{ q: title, mode: "auto", text: "ok", cards: [], meta: null, status: "done" }] });
-    localStorage.setItem(`pantado-ask:wallet:${owner}`, JSON.stringify([conv("home-a", "E2E home chat"), conv("home-b", "E2E other chat")]));
-    // a chat an older build saved without a wallet
-    localStorage.setItem(`pantado-ask:anon:${s.id}`, JSON.stringify([conv("anon-a", "E2E anonymous chat")]));
+    const conversation = (id: string, title: string) => ({
+      id, title, created: now, updated: now,
+      turns: [{ q: title, mode: "auto", text: "Saved answer", cards: [], meta: null, status: "done" }],
+    });
+    localStorage.setItem(`pantado-ask:wallet:${address}`, JSON.stringify([
+      conversation("home-a", "Market overview"),
+      conversation("home-b", "Index performance"),
+    ]));
   }, user.address.toLowerCase());
-  await page.reload();
-  // no wallet: no history at all
-  await expect(page.locator(".chats")).toContainText("Connect to see your chats");
-  await expect(page.locator(".chats")).not.toContainText("E2E anonymous chat");
-  await expect(page.locator(".chats")).not.toContainText("E2E home chat");
+
+  const guestAsk = await openAsk(page);
+  await guestAsk.getByRole("button", { name: "Chats", exact: true }).click();
+  await expect(guestAsk).toContainText("Connect to keep your chats.");
+  await expect(guestAsk).not.toContainText("Index performance");
+
   await connect(page);
-  await page.goto("/");
-  const chats = page.locator(".chats");
-  await expect(chats).toContainText("E2E home chat");
-  await expect(chats).not.toContainText("E2E anonymous chat"); // never moved into the wallet
-  await expect(chats).not.toContainText("Connect to see your chats");
-  await page.getByPlaceholder("Search chats").fill("other");
-  await expect(chats).not.toContainText("E2E home chat");
-  await page.getByRole("button", { name: "E2E other chat" }).click();
-  await expect(page).toHaveURL(/\/ask\?c=home-b$/);
-  expect(errs).toEqual([]);
+  const ask = await openAsk(page);
+  await ask.getByRole("button", { name: "Chats", exact: true }).click();
+  await expect(ask).toContainText("Market overview");
+  await ask.getByRole("textbox", { name: "Search chats" }).fill("performance");
+  await expect(ask).not.toContainText("Market overview");
+  await ask.getByRole("button", { name: /Index performance/ }).click();
+  await expect(ask).toContainText("Saved answer");
 });
 
-test("without a wallet, a question in the link is asked (shown, not saved), and Ask agent on an index starts one", async ({ page }) => {
-  await page.goto(`/ask?q=${encodeURIComponent("E2E anonymous question about AVAX")}&mode=auto`);
-  await expect(page).toHaveURL(/\/ask\?c=/);
-  await expect(page.locator("section[aria-label='Conversation']")).toContainText("E2E anonymous question about AVAX");
-  await expect(page.locator(".chats")).not.toContainText("E2E anonymous question"); // not listed without a wallet
-  const tbb = await indexByTicker("TBB");
-  await page.goto(`/index/${tbb}`);
-  await expect(page.getByRole("link", { name: "Fork" })).toHaveCount(0);
-  await page.getByRole("link", { name: "Ask agent" }).click();
-  await expect(page).toHaveURL(/\/ask\?c=/);
-  await expect(page.locator("section[aria-label='Conversation']")).toContainText("(TBB)");
+test("Ask streams a reply without saving a guest conversation", async ({ page }) => {
+  const headers = {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "POST, OPTIONS",
+    "access-control-allow-headers": "content-type",
+  };
+  await page.route("**/ask", async (route) => {
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    await route.fulfill({
+      contentType: "text/event-stream",
+      headers,
+      body: 'event: token\ndata: {"text":"An index tracks a basket."}\n\nevent: done\ndata: {}\n\n',
+    });
+  });
+
+  await page.goto("/network");
+  const ask = await openAsk(page);
+  const question = "How does an index work?";
+  await ask.getByPlaceholder("Ask PantadoAI about a token, a stock or an index").fill(question);
+  await ask.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(ask).toContainText(question);
+  await expect(ask).toContainText("An index tracks a basket.");
+  await expect(page).toHaveURL(/\/network$/);
+
+  await page.reload();
+  const reloadedAsk = await openAsk(page);
+  await reloadedAsk.getByRole("button", { name: "Chats", exact: true }).click();
+  await expect(reloadedAsk).not.toContainText(question);
 });

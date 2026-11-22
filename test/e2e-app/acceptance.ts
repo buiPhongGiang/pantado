@@ -237,12 +237,12 @@ async function main(): Promise<void> {
   await mintUsdc(user.address, 5_000);
   await send(user, tx.approve(usdc, c.factory));
 
-  await step(1, "Deploy: 25 pTokens + test tokens registered, stock reserve seeded, deployments file", async () => {
+  await step(1, "Deploy: 50 pTokens + test tokens registered, stock reserve seeded, deployments file", async () => {
     const listed = await Promise.all(assets.filter((a) => a.kind !== "quote").map(async (a) => ({ a, ok: await pc.readContract({ address: c.assetRegistry, abi: assetRegistryAbi, functionName: "isListed", args: [execOf(a.id)] }) })));
     const missing = listed.filter((x) => !x.ok).map((x) => x.a.id);
     check(missing.length === 0, `not listed: ${missing.join(", ")}`);
     const stocks = assets.filter((a) => a.kind === "stock").length;
-    check(stocks === 25, `expected 25 stocks, config has ${stocks}`);
+    check(stocks === 50, `expected 50 stocks (25 US + 25 Vietnamese), config has ${stocks}`);
     const { reserve } = await ctx.reader.stockVenueState();
     check(reserve > 0n, "stock reserve is empty");
     return `${listed.length} assets listed (${stocks} stocks); reserve ${formatUnits(reserve, 6)} USDC; ${process.env.PANTADO_DEPLOYMENTS ?? ctx.profile.execution.deployments}`;
@@ -267,7 +267,7 @@ async function main(): Promise<void> {
   await step(3, "Marketplace data: live prices with source badges", async () => {
     const view = await getJson<{ id: string; kind: string; badge: string | null; dataSource: string; price: { source: string } | null }[]>(API, "/assets");
     const stocks = view.filter((a) => a.kind === "stock");
-    const noBadge = stocks.filter((a) => !a.badge?.includes("Robinhood Chain")).map((a) => a.id);
+    const noBadge = stocks.filter((a) => !(a.badge?.includes("On-chain") || a.badge?.includes("HOSE"))).map((a) => a.id);
     check(noBadge.length === 0, `stocks without the reference badge: ${noBadge.join(", ")}`);
     const priced = view.filter((a) => a.kind !== "quote" && a.price);
     const seeded = priced.filter((a) => a.price?.source === "seed");

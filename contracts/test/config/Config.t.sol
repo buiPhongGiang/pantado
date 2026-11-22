@@ -33,7 +33,7 @@ contract ConfigTest is Test {
         string memory j = _read("config/assets.fuji.json");
         assertEq(j.readUint(".chainId"), 43113);
         ContractAsset[] memory assets = ConfigReader.assets("fuji");
-        assertEq(assets.length, 61); // USDC + 35 tokens + 25 stocks
+        assertEq(assets.length, 86); // USDC + 35 tokens + 25 US stocks + 25 Vietnamese stocks
         assertEq(assets[0].id, "usdc");
         assertEq(assets[0].decimals, 6);
         assertEq(assets[0].priceE18, 1e18);
@@ -49,7 +49,7 @@ contract ConfigTest is Test {
                 assertEq(assets[i].addr, "deploy");
             }
         }
-        assertEq(stocks, 25);
+        assertEq(stocks, 50); // 25 US + 25 Vietnamese
     }
 
     function test_avalancheAssetsNeverDeployMocks() public view {

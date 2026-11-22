@@ -63,7 +63,7 @@ function CardInline({ card, assetSym }: { card: AgentCard; assetSym: (id: string
     return (
       <div style={css("display: flex; flex-wrap: wrap; gap: 8px")}>
         <a style={css(BTN1)} href={`/asset/${a.id}`}>
-          {`Trade ${a.displaySymbol ?? a.symbol}`}
+          {`Open ${a.displaySymbol ?? a.symbol}`}
           <Arrow />
         </a>
         <a style={css(BTN2)} href="/create">
@@ -79,9 +79,6 @@ function CardInline({ card, assetSym }: { card: AgentCard; assetSym: (id: string
         <a style={css(BTN1)} href={`/index/${d.id}`}>
           {"Open index"}
           <Arrow />
-        </a>
-        <a style={css(BTN2)} href={`/index/${d.id}`}>
-          {"Buy $50"}
         </a>
       </div>
     );
@@ -152,7 +149,7 @@ function CardInline({ card, assetSym }: { card: AgentCard; assetSym: (id: string
             {rows.map((r, i) => (
               <td key={i} style={css("padding: 12px 16px 16px")}>
                 <a style={css("display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; background: #F2F2F3; color: #0B0B0D; border-radius: 10px; font-size: 14px; font-weight: 700")} href={`/asset/${r.id}`}>
-                  {`Trade ${r.symbol ?? r.id}`}
+                  {`Open ${r.symbol ?? r.id}`}
                   <Arrow />
                 </a>
               </td>
@@ -430,7 +427,7 @@ export function AssetCard({ a }: { a: Scope }): ReactNode {
       <Stats items={[{ k: "Vol 24h", v: s("vol24") }, { k: "30d", v: s("m30"), c: s("m30Col") }, { k: "Liquidity", v: s("liq") }]} />
       <div style={css("display: flex; flex-wrap: wrap; align-items: center; gap: 8px")}>
         <a style={css(BTN_S1)} href={s("href")}>
-          {`Trade ${s("sym")}`}
+          {`Open ${s("sym")}`}
           <Arrow />
         </a>
         <a style={css(BTN_S2)} href="/create">
@@ -499,9 +496,6 @@ export function IndexCard({ ix }: { ix: Scope }): ReactNode {
         <a style={css(BTN_S1)} href={s("href")}>
           {"Open index"}
           <Arrow />
-        </a>
-        <a style={css(BTN_S2)} href={s("href")}>
-          {"Buy $50"}
         </a>
         {ix.badge ? <span style={css("margin-left: auto; font-size: 11px; color: #8E8E96")}>{s("badge")}</span> : null}
       </div>

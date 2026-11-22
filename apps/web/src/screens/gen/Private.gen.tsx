@@ -3,6 +3,7 @@
 "use client";
 import { Fragment, type ReactNode } from "react";
 import { A, P, bool, child, css, H, HI, interp, list, lookup, T, type LinkTarget, type Scope } from "../../lib/tpl";
+import { commonSlots } from "../../lib/common-slots";
 
 export const title = "My basket";
 
@@ -15,7 +16,7 @@ export function PrivateScreen({
   nav: (target: LinkTarget, scope: Scope) => string;
   slots?: Record<string, (scope: Scope) => ReactNode>;
 }) {
-  const slot = (name: string, s: Scope): ReactNode => slots[name]?.(s) ?? null;
+  const slot = (name: string, s: Scope): ReactNode => (slots[name] ?? commonSlots[name])?.(s) ?? null;
   void A; void P; void HI; void H; void child; void list; void bool; void interp; void T;
   return (
     <div style={css("min-height: 100%; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch")}>
@@ -34,14 +35,7 @@ export function PrivateScreen({
           </span>
           {"Ask"}
         </a>
-        <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Swap", v)}>
-          <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <path d="M4 8h13l-3.5-3.5M18 14H5l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          {"Swap"}
-        </a>
+        {slot("navNetwork", v)}
         <a aria-current="page" style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #F2F2F3")} href={nav("Marketplace", v)}>
           <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: #221637; color: #B18CFB")}>
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
@@ -421,54 +415,7 @@ export function PrivateScreen({
             </div>
             {slot("changes", v)}
             {slot("split", v)}
-            <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px")}>
-              <div role="group" aria-label="Side" style={css("display: grid; grid-template-columns: 1fr 1fr; background: #131316; border-radius: 12px; padding: 4px")}>
-                {list(lookup("sides", v)).map((it, i) => { const s6 = child(v, "sd", it, i); return (
-                  <Fragment key={i}>
-                  <button type="button" onClick={H(lookup("sd.pick", s6))} style={css(interp("min-height: 44px; background: {{sd.bg}}; color: {{sd.fg}}; border: 0; border-radius: 9px; font-size: 14px; font-weight: 600", s6))} {...P({ "aria-pressed": A(lookup("sd.on", s6)) })}>
-                    {T(lookup("sd.label", s6))}
-                  </button>
-                  </Fragment>); })}
-              </div>
-              <div style={css("display: flex; align-items: center; background: #131316; border: 1px solid #26262B; border-radius: 12px")}>
-                <label htmlFor="amt" style={css("position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)")}>
-                  {interp("Amount in {{unit}}", v)}
-                </label>
-                <input id="amt" type="number" min="0" step="10" value={T(lookup("amt", v))} onChange={HI(lookup("onAmt", v))} style={css("flex: 1 1 auto; min-width: 0; min-height: 56px; padding: 0 14px; background: transparent; border: 0; color: #F2F2F3; font-family: 'Inter Tight', sans-serif; font-size: 24px; font-weight: 600")} />
-                <span style={css("padding: 0 14px; font-weight: 600; font-size: 14px; color: #B4B4BB")}>
-                  {T(lookup("unit", v))}
-                </span>
-              </div>
-              <div style={css("display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: #131316; border-radius: 12px")}>
-                <span style={css("display: flex; flex-direction: column; gap: 2px")}>
-                  <span style={css("font-size: 13px; color: #8E8E96")}>
-                    {"You receive"}
-                  </span>
-                  <span style={css("font-family: 'Inter Tight', sans-serif; font-size: 20px; font-weight: 600")}>
-                    {T(lookup("recv", v))}
-                  </span>
-                </span>
-                <span style={css("display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 6px; background: #1F1F23; border-radius: 999px; font-size: 14px; font-weight: 600")}>
-                  <span style={css("display: flex; width: 22px; height: 22px; border-radius: 50%; overflow: hidden")} aria-hidden="true">
-                    <span style={css(interp("display: block; width: {{tokStocks}}%; background: #F2F2F3", v))}></span>
-                    <span style={css(interp("display: block; flex: 1; background: {{tokRight}}", v))}></span>
-                  </span>
-                  {T(lookup("getSym", v))}
-                </span>
-              </div>
-              <span style={css("font-size: 13px; color: #8E8E96")}>
-                {T(lookup("note", v))}
-              </span>
-              <div style={css("display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid #26262B; font-size: 13px; color: #8E8E96")}>
-                <span>
-                  {T(lookup("feeLabel", v))}
-                </span>
-                <span style={css("color: #B4B4BB")}>
-                  {T(lookup("fee", v))}
-                </span>
-              </div>
-              {slot("cta", v)}
-            </div>
+            {slot("tradeCard", v)}
             <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px")}>
               <div style={css("display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600")}>
                 <svg width="17" height="13" viewBox="10 14 324 241" aria-hidden="true">

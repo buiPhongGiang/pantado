@@ -11,7 +11,7 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:3100", trace: "retain-on-failure", viewport: { width: 1440, height: 900 } },
   webServer: {
     command: "pnpm stack:anvil",
-    url: "http://127.0.0.1:3100/marketplace",
+    url: "http://127.0.0.1:3100/",
     timeout: 600_000,
     reuseExistingServer: true,
     stdout: "pipe",

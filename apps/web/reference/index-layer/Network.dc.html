@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Network</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#060607}
+a{color:#F2F2F3;text-decoration:none}a:hover{color:#B18CFB}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #B18CFB;outline-offset:2px}
+@keyframes flow{from{transform:translateX(-8px);opacity:0}50%{opacity:1}to{transform:translateX(8px);opacity:0}}
+@media (prefers-reduced-motion: reduce){.flowdot{animation:none !important}}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+<div style="max-width: 1420px; margin: 0 auto; background: #0B0B0D; border: 1px solid #1A1A1D; border-radius: 18px; overflow: hidden">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 14px 16px; border-bottom: 1px solid #17171A">
+    <a href="Main.dc.html" aria-label="Pantado home" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #17171A; border: 1px solid #1F1F23; display: grid; place-items: center">
+        <svg width="24" height="18" viewBox="10 14 324 241" aria-hidden="true"><path d="M94 16H238C291 16 331 60 331 113C331 166 291 206 240 206H213L219 200C247 195 267 176 267 153C267 126 247 104 221 104H94Z" fill="#F4F2FA"></path><path d="M137 146V252H12V214C12 176 42 146 80 146Z" fill="#9052F9"></path></svg>
+      </span>
+      <img src="/_blob/33071f8508580726c9aadb20187ee8f4" alt="pantado" style="height: 22px; width: auto">
+    </a>
+    <nav aria-label="Main" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <a href="Main.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Market</a>
+      <a href="Create.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Create</a>
+      <a href="Workspace.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Workspace</a>
+      <a href="Network.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 12px; background: #1C1C20; color: #F2F2F3; font-weight: 600; font-size: 15px">Network</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #E84142"></span>Avalanche
+        <span style="padding: 3px 8px; border-radius: 6px; background: #2E2311; color: #F5B14C; font-size: 12px; font-weight: 600">Fuji testnet</span>
+      </span>
+      <button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #9052F9; color: #FFFFFF; font-weight: 700; font-size: 15px">Connect</button>
+    </div>
+  </header>
+
+  <div style="padding: 32px 24px 32px; display: flex; flex-direction: column; gap: 24px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+      <h1 style="margin: 0; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -0.05em">Network</h1>
+      <span style="padding: 4px 10px; border-radius: 999px; background: #221637; color: #C9B3FD; font-size: 12px; font-weight: 600">Pantado Price Chain · Avalanche L1</span>
+      <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3DD68C"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3DD68C"></span>Live</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr)">
+      <sc-for list="{{ stages }}" as="s" hint-placeholder-count="7">
+        <sc-if value="{{ s.arrow }}" hint-placeholder-val="{{ false }}">
+          <div aria-hidden="true" style="display: grid; place-items: center; position: relative">
+            <div style="position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed #2A2A2F"></div>
+            <span class="flowdot" style="position: relative; width: 8px; height: 8px; border-radius: 50%; background: #9052F9; animation: flow 1.6s ease-in-out infinite"></span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ s.card }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 18px 20px; border-radius: 16px; background: #0E0E10; border: 1px solid {{ s.border }}; display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8E8E96"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{ s.dot }}"></span>{{ s.label }}</span>
+            <span style="font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.03em">{{ s.value }}</span>
+            <span style="font-size: 13px; color: {{ s.noteFg }}">{{ s.note }}</span>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <section style="flex: 2 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">Prices</h2>
+          <span style="font-size: 13px; color: #8E8E96">USD · from HOSE</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{ prices }}" as="p" hint-placeholder-count="12">
+            <a href="StockVN.dc.html" style="padding: 14px; border-radius: 14px; background: {{ p.bg }}; border: 1px solid {{ p.border }}; display: flex; flex-direction: column; gap: 10px">
+              <span style="display: flex; align-items: center; gap: 8px">
+                <sc-if value="{{ p.img }}" hint-placeholder-val="{{ true }}"><img src="{{ p.img }}" alt="" style="width: 22px; height: 22px; border-radius: 50%"></sc-if>
+                <sc-if value="{{ p.ini }}" hint-placeholder-val="{{ false }}"><span style="width: 22px; height: 22px; border-radius: 50%; background: #26262B; display: grid; place-items: center; font-size: 9px; font-weight: 700">{{ p.ini }}</span></sc-if>
+                <b style="font-size: 14px">{{ p.sym }}</b>
+                <span title="{{ p.status }}" style="margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: {{ p.dot }}"></span>
+              </span>
+              <span style="font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 20px">{{ p.px }}</span>
+              <span style="font-size: 12px; color: {{ p.noteFg }}">{{ p.note }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+
+      <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+        <section style="display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">Rounds</h2>
+          <div style="border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; padding: 4px 16px">
+            <sc-for list="{{ rounds }}" as="r" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid {{ r.line }}">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ r.fg }}"></span>
+                <b style="font-size: 14px">{{ r.round }}</b>
+                <span style="font-size: 13px; color: #8E8E96">{{ r.at }}</span>
+                <span style="margin-left: auto; font-size: 13px; font-weight: 600; color: {{ r.fg }}">{{ r.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between"><h2 style="margin: 0; font-size: 17px; font-weight: 700">Reporters</h2><span style="font-size: 13px; color: #8E8E96">gap from median</span></div>
+          <div style="border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; padding: 4px 16px">
+            <sc-for list="{{ reporters }}" as="r" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid {{ r.line }}">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ r.fg }}"></span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">{{ r.addr }}</span>
+                <span style="font-size: 13px; color: #8E8E96">{{ r.ago }}</span>
+                <b style="margin-left: auto; font-size: 13px; color: {{ r.gfg }}">{{ r.gap }}</b>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <p style="margin: 0; padding-top: 16px; border-top: 1px solid #17171A; font-size: 13px; color: #8E8E96">3 of 4 reporters · median per asset · 30s rounds · delivered to the C-Chain over Avalanche ICM · sample values</p>
+  </div>
+</div>
+<div aria-hidden="true" style="height: 92px"></div>
+<dc-import name="AskWidget" start-open="{{ no }}" hint-size="60px,60px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const G = '#3DD68C', W = '#F5B14C', I = '#8E8E96';
+    const st = [
+      ['Reporters', '3 / 4', 'reporting · 3 needed', G, '#1C1C20', '#8E8E96'],
+      ['Final on L1', '#29,401,738', '14:29 UTC', G, '#1C1C20', '#8E8E96'],
+      ['ICM delivery', '1.8s', 'average', G, '#1C1C20', '#8E8E96'],
+      ['On C-Chain', '11 / 12', '1 price behind', W, '#3A2C12', '#F5B14C']
+    ];
+    const stages = [];
+    st.forEach((s, i) => {
+      if (i) stages.push({ arrow: true, card: false });
+      stages.push({ arrow: false, card: true, label: s[0], value: s[1], note: s[2], dot: s[3], border: s[4], noteFg: s[5] });
+    });
+    const LG = { FPT: '/_blob/e3f1c11249881fd23b4e8f00dc924a42', VCB: '/_blob/523fb233a3ec4e2510ac884e3c071124', HPG: '/_blob/18d7c34d7f599b98be5e7159aea28b54' };
+    const P = [['FPT', '$3.7992'], ['VCB', '$2.5118'], ['HPG', '$1.0807'], ['VIC', '$4.1260'], ['VHM', '$2.3189'], ['MWG', '$2.8031'], ['TCB', '$1.4134'], ['VPB', '$0.7874'], ['HDB', '$1.0571'], ['SSI', '$1.2933'], ['SHB', '$0.5157', 'behind'], ['VIX', '$0.6772']];
+    const prices = P.map((p) => {
+      const late = p[2] === 'behind';
+      return { sym: p[0], px: p[1], img: LG[p[0]] || '', ini: LG[p[0]] ? '' : p[0].slice(0, 2), dot: late ? W : G, status: late ? 'Behind' : 'In sync',
+        note: late ? 'Behind · 1m 32s' : '28s ago', noteFg: late ? W : I, bg: late ? '#17130C' : '#0E0E10', border: late ? '#3A2C12' : '#1C1C20' };
+    });
+    const rounds = [
+      ['#29,401,739', '14:30', 'Collecting', I], ['#29,401,738', '14:29', 'Final on L1', W],
+      ['#29,401,737', '14:29', 'Delivered · 2s', G], ['#29,401,736', '14:28', 'Delivered · 1s', G], ['#29,401,735', '14:28', 'Delivered · 2s', G]
+    ].map((r, i) => ({ round: r[0], at: r[1], status: r[2], fg: r[3], line: i ? '#17171A' : 'transparent' }));
+    const reporters = [
+      ['0x5a1e…c03b', '3s ago', 0.04, G], ['0x91d4…7e22', '5s ago', 0.11, G], ['0xc7f0…1a9d', '31s ago', 0.27, G], ['0x3b6a…e4f1', 'quiet 3m', 0.08, W]
+    ].map((r, i) => ({ addr: r[0], ago: r[1], gap: r[2].toFixed(2) + '%', gfg: r[2] <= 0.2 ? '#B4B4BB' : W, fg: r[3], line: i ? '#17171A' : 'transparent' }));
+    return { no: false, stages, prices, rounds, reporters };
+  }
+}
+</script>
+</body>
+</html>

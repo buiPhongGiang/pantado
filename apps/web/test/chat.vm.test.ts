@@ -9,7 +9,7 @@ const me = { short: "", balanceS: "—", address: null };
 
 const assetCard = {
   kind: "asset" as const,
-  data: { id: "nvda", symbol: "NVDA", name: "NVIDIA", kind: "stock", color: "#76B900", price: { usd: 169.95 }, badge: "Reference market: Robinhood Chain (on-chain)", board: { change24h: 0.031, change30d: -0.111 } },
+  data: { id: "nvda", symbol: "NVDA", name: "NVIDIA", kind: "stock", color: "#76B900", price: { usd: 169.95 }, badge: "Reference market: On-chain", board: { change24h: 0.031, change30d: -0.111 } },
 };
 const draftCard = {
   kind: "draft" as const,
@@ -78,7 +78,7 @@ describe("chatVM", () => {
   it("asset card from live data, stock badge, unknown volume/liquidity as —", () => {
     const a = chatVM(base()).asset as Record<string, unknown>;
     expect(a).toMatchObject({ sym: "NVDA", name: "NVIDIA", ini2: "", dot: logoFill("nvda"), kind: "Stock", price: "$169.95", chg: "+3.1%", chgCol: "#3DD68C", m30: "-11.1%", m30Col: "#FF6B6B", vol24: "—", liq: "—", href: "/asset/nvda" });
-    expect(a.badge).toBe("Reference market: Robinhood Chain (on-chain)");
+    expect(a.badge).toBe("Reference market: On-chain");
   });
 
   it("draft card: weights, mix and the Create link; no invented backtest", () => {

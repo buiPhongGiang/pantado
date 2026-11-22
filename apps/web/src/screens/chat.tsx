@@ -12,7 +12,7 @@ import { ChatScreen, title as pageTitle } from "./gen/Chat.gen";
 import type { Candle } from "./chat.charts";
 import { Empty } from "./chat.history";
 import { Conversation, ConvRow, type ConvRowData } from "./chat.parts";
-import { AgentError, askStream, type AskEvent } from "./chat.sse";
+import { AgentError, applyEvent, askStream } from "./chat.sse";
 import { anonSession, historyOf, newId, ownerOf, saveConvs, titleOf, type Conversation as Conv, type KV, type Turn } from "./chat.store";
 import { chatVM, latestCard, type AssetCardData, type AssetLite, type BoardLite, type IndexCardData } from "./chat.vm";
 
@@ -25,24 +25,6 @@ const storage = (): KV | null => {
 };
 
 type Mode = "auto" | "deep";
-
-/** Apply one stream event to a turn. */
-function applyEvent(t: Turn, e: AskEvent): Turn {
-  switch (e.type) {
-    case "token":
-      return { ...t, text: t.text + e.text };
-    case "card":
-      return { ...t, cards: [...t.cards, e.card] };
-    case "meta":
-      return { ...t, meta: { tools: e.tools, ms: e.ms } };
-    case "related":
-      return { ...t, related: e.questions };
-    case "done":
-      return { ...t, status: "done" };
-    default:
-      return t;
-  }
-}
 
 export default function Chat() {
   const router = useRouter();

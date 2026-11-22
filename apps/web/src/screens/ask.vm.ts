@@ -29,6 +29,8 @@ export interface SuggestionRow {
   buy: boolean;
   ask: boolean;
   weight: number;
+  /** the tab's index row, kept first (no trading: it asks about the index instead of buying it) */
+  lead?: boolean;
   _href: { AskChat?: string; IndexDetail?: string };
 }
 
@@ -51,7 +53,8 @@ const a = (r: AskBoardRow, text: string, mode: AskMode): SuggestionRow => ({
   weight: 400,
   _href: { AskChat: askHref(`${r.symbol} ${text}`, mode) },
 });
-const b = (ix: AskBoardRow): SuggestionRow => ({ chip: false, text: `Buy ${ix.name} for $50`, buy: true, ask: false, weight: 600, _href: { IndexDetail: `/index/${ix.id}` } });
+// no trading (owner): the index row asks about the index instead of buying it
+const b = (ix: AskBoardRow, mode: AskMode): SuggestionRow => ({ chip: false, text: `What is inside ${ix.name}, and how has it done?`, buy: false, ask: true, weight: 600, lead: true, _href: { AskChat: askHref(`What is inside ${ix.name}, and how has it done?`, mode) } });
 
 /** "is up 3.1% today" from a real 24h change. */
 export function moveText(change: number): string {
@@ -74,7 +77,7 @@ export interface DailySuggestions {
 }
 
 /**
- * Rows of a tab: its buy row, then the day's questions from the agent (an asset's chip before its question), topped up
+ * Rows of a tab: its index row, then the day's questions from the agent (an asset's chip before its question), topped up
  * from the built-in rows when the agent has fewer than four for the tab or is unavailable.
  */
 export function suggestions(tab: AskTab, mode: AskMode, board: AskBoardRow[], daily: DailySuggestions | null = null): SuggestionRow[] {
@@ -87,9 +90,9 @@ export function suggestions(tab: AskTab, mode: AskMode, board: AskBoardRow[], da
     const r = byId.get(s.asset);
     return r ? [a(r, s.text, mode)] : [];
   });
-  const buyRow = builtIn.filter((r) => r.buy);
-  const others = builtIn.filter((r) => !r.buy);
-  return [...buyRow, ...fromDay, ...others].slice(0, buyRow.length + 4);
+  const leadRow = builtIn.filter((r) => r.lead);
+  const others = builtIn.filter((r) => !r.lead);
+  return [...leadRow, ...fromDay, ...others].slice(0, leadRow.length + 4);
 }
 
 function builtInSuggestions(tab: AskTab, mode: AskMode, board: AskBoardRow[]): SuggestionRow[] {
@@ -98,7 +101,7 @@ function builtInSuggestions(tab: AskTab, mode: AskMode, board: AskBoardRow[]): S
   const tokens = movers(board, "token");
   const allMovers = [...stocks, ...tokens].sort((x, y) => Math.abs(y.change24h ?? 0) - Math.abs(x.change24h ?? 0));
   const out: (SuggestionRow | null)[] = [];
-  const buy = (r: AskBoardRow | undefined): SuggestionRow | null => (r ? b(r) : null);
+  const buy = (r: AskBoardRow | undefined): SuggestionRow | null => (r ? b(r, mode) : null);
   if (tab === "Today") {
     const m = allMovers[0];
     out.push(

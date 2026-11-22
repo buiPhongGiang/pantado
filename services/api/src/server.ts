@@ -4,10 +4,11 @@ import { collectDefaultMetrics, Histogram, Registry } from "prom-client";
 import { erc20Abi, getAddress, isAddress, type Address } from "viem";
 import { z } from "zod";
 import { assetColor, buySpends, displaySymbol, previewBuy, previewSell, quoteSwap, sellAmounts, type Asset } from "@pantado/shared";
-import { feeSplitterAbi, indexFactoryAbi, indexVaultAbi, swapRouterAbi } from "@pantado/sdk";
+import { feeSplitterAbi, indexFactoryAbi, indexRegistryAbi, indexVaultAbi, priceOracleAbi, swapRouterAbi } from "@pantado/sdk";
 import { loadBasket, loadLeg, quoteDexLegs } from "./chain-state.js";
 import { displayPrices, type ApiDeps, type HistInterval } from "./deps.js";
 import { ApiError, fromQuoteError } from "./errors.js";
+import { backfillLevels } from "./backfill.js";
 import { fifo } from "./pnl.js";
 import { equalWeights, lowVolWeights, marketCapWeights, PresetError } from "./presets.js";
 
@@ -15,7 +16,8 @@ const bigReplacer = (_k: string, v: unknown): unknown => (typeof v === "bigint" 
 const INTERVAL_SEC: Record<string, number> = { "1m": 60, "5m": 300, "15m": 900, "1h": 3600, "4h": 14_400, "1d": 86_400, "1w": 604_800 };
 const HIST_INTERVALS = ["15m", "1h", "4h", "1d", "1w"] as const;
 const isHistInterval = (i: string): i is HistInterval => (HIST_INTERVALS as readonly string[]).includes(i);
-const REFERENCE_BADGE = "Reference market: Robinhood Chain (on-chain)";
+/** Data source label of an asset: a stock's reference market (Robinhood Chain on-chain, or HOSE off-chain), else Avalanche. */
+const sourceBadge = (a: Asset): string => (a.kind === "stock" ? a.display.badge : "Avalanche (on-chain)");
 const FUJI_BADGE = "Traded on Fuji testnet";
 
 interface IndexRow {
@@ -24,6 +26,8 @@ interface IndexRow {
   name: string;
   description: string;
   creator: Address;
+  /** "vault" (legacy: basket bought with USDC) | "data" (IndexRegistry: level from prices, nothing held) */
+  model: "vault" | "data";
   isPublic: boolean;
   mode: number;
   driftBps: number;
@@ -40,7 +44,7 @@ interface IndexRow {
   createdAt: string;
 }
 const INDEX_FIELDS =
-  "id ticker name description creator isPublic mode driftBps pendingMode pendingAt assets targetBps version supply level value levelBlock volumeUsdc createdAt";
+  "id model ticker name description creator isPublic mode driftBps pendingMode pendingAt assets targetBps version supply level value levelBlock volumeUsdc createdAt";
 
 export function buildServer(d: ApiDeps, registry: Registry = new Registry()): FastifyInstance {
   const app = Fastify({ logger: false });
@@ -72,7 +76,7 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
   const showFuji = d.profile.flags.showFujiBadge;
 
   const displayAddress = (a: Asset): Address | null => {
-    if (a.kind === "stock") return a.display.confirmed && a.display.token !== "TODO" ? a.display.token : null;
+    if (a.kind === "stock") return a.display.chain === "robinhood" && a.display.confirmed && a.display.token !== "TODO" ? a.display.token : null;
     return a.display.confirmed && a.display.address !== "TODO" ? a.display.address : null;
   };
 
@@ -88,8 +92,8 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
       decimals: a.kind === "stock" ? 18 : a.decimals,
       color: assetColor(a.id),
       logoURI: a.logoURI,
-      badge: a.kind === "stock" ? REFERENCE_BADGE : null,
-      dataSource: a.kind === "stock" ? REFERENCE_BADGE : "Avalanche (on-chain)",
+      badge: a.kind === "stock" ? a.display.badge : null,
+      dataSource: sourceBadge(a),
       display: { chain: a.display.chain, address: displayAddress(a) },
       execution: { network: d.profile.execution.network, address: execAddr(a.id), symbol: a.kind === "stock" ? `p${a.symbol}` : a.symbol },
       price: px,
@@ -161,6 +165,14 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
     return { status: out.status ?? "funded" };
   });
 
+  // ================================================================ network (Pantado Price Chain)
+
+  app.get("/network", async () => {
+    const pc = d.priceChain;
+    if (!pc) throw new ApiError(404, "NotConfigured", "The Pantado Price Chain is not configured on this server.");
+    return d.cache.wrap("network", Math.max(d.services.api.cacheSec, 5), () => pc.view(20));
+  });
+
   // ================================================================ assets
 
   app.get("/assets", async () => d.cache.wrap("assets", d.services.api.cacheSec, async () => Promise.all(d.assets.map(assetView))));
@@ -206,7 +218,7 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
     // 15m and up: the reference market (every mainnet swap since history.since, read by market-data, B68)
     if (d.history && isHistInterval(interval)) {
       const ref = await d.cache.wrap(`hist:${a.id}:${interval}:${limit}:${before ?? ""}`, 30, () => d.history?.candles(a.id, interval, limit, before) ?? Promise.resolve([]));
-      if (ref.length || before !== undefined) return { source: a.kind === "stock" ? REFERENCE_BADGE : "Avalanche (on-chain)", candles: ref };
+      if (ref.length || before !== undefined) return { source: sourceBadge(a), candles: ref };
     }
     if (before !== undefined) return { source: null, candles: [] };
     if (!exec) return { source: null, candles: [] };
@@ -239,8 +251,8 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
     const pools: Record<string, unknown>[] = [];
     if (a.kind === "stock") {
       pools.push({ kind: "route", name: "Pantado stock venue", venue: "stock-venue", spreadBps: a.risk.spreadBps, sizeCapUsd: a.risk.sizeCapUsd, network: d.profile.execution.network });
-      if (a.display.confirmed && a.display.referencePool !== "TODO")
-        pools.push({ kind: "reference", chain: "robinhood", address: a.display.referencePool, dex: a.display.dex ?? null, badge: REFERENCE_BADGE });
+      if (a.display.chain === "robinhood" && a.display.confirmed && a.display.referencePool !== "TODO")
+        pools.push({ kind: "reference", chain: "robinhood", address: a.display.referencePool, dex: a.display.dex ?? null, badge: a.display.badge });
     } else if (a.kind === "token") {
       pools.push({ kind: "route", name: "Pantado token venue", venue: a.venue[d.profile.profile], spreadBps: a.risk.spreadBps, network: d.profile.execution.network });
       for (const p of d.profile.data.avalanche.pools ?? [])
@@ -300,8 +312,8 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
               change7d: c7,
               change30d: c30,
               volume24hUsd: mvol ? (mvol.byAsset.get(a.id) ?? 0) : null,
-              volumeSource: a.kind === "stock" ? REFERENCE_BADGE : "Avalanche (on-chain)",
-              dataSource: a.kind === "stock" ? REFERENCE_BADGE : "Avalanche (on-chain)",
+              volumeSource: sourceBadge(a),
+              dataSource: sourceBadge(a),
             };
           }),
       );
@@ -332,7 +344,23 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
             const id = idByExec.get(a.toLowerCase());
             return s + (id && byId.get(id)?.kind === "stock" ? (r.targetBps[i] ?? 0) : 0);
           }, 0);
-          const [c24, c7, c30] = await Promise.all([at(86400), at(7 * 86400), at(30 * 86400)]);
+          const [h24, h7, h30] = await Promise.all([at(86400), at(7 * 86400), at(30 * 86400)]);
+          // a data index younger than the window: compare with its replay on daily closes (labelled on its pages)
+          const replay = (h24 === null || h7 === null || h30 === null) && r.model === "data" ? await backfillFor(r, 35, null).catch(() => []) : [];
+          const firstLevel = await d.gql<{ indexLevelss: { items: { level: string }[] } }>(
+            `query($i: String!) { indexLevelss(where: { index: $i }, orderBy: "block", orderDirection: "asc", limit: 1) { items { level } } }`,
+            { i: r.id },
+          ).then((q) => Number(q.indexLevelss.items[0]?.level ?? 0) / 1e18).catch(() => 0);
+          const fromReplay = (ago: number): number | null => {
+            if (!replay.length || !(firstLevel > 0)) return null;
+            const end = replay[replay.length - 1] as { ts: number; level: number };
+            const k = firstLevel / end.level; // join the replay to the first indexed level
+            const p = [...replay].reverse().find((x) => x.ts <= now - ago);
+            return p && p.level > 0 ? level / (p.level * k) - 1 : null;
+          };
+          const c24 = h24 ?? fromReplay(86400);
+          const c7 = h7 ?? fromReplay(7 * 86400);
+          const c30 = h30 ?? fromReplay(30 * 86400);
           return {
             id: r.id,
             kind: "index",
@@ -369,7 +397,99 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
     }),
   );
 
+  // ================================================================ fx
+
+  /** VND per USD for showing Vietnamese stock prices in ₫ (the same rate market-data converts with). */
+  app.get("/fx", async () => d.cache.wrap("fx", 60, async () => ({ vndPerUsd: (await d.history?.fx?.())?.vndPerUsd ?? null })));
+
   // ================================================================ indexes
+
+  /** Rebalance state of a data index: mode, its trigger, a scheduled basket and what `poke` would do now. */
+  async function dataRebalance(index: Address) {
+    const reg = d.deployment.contracts.indexRegistry;
+    if (!reg) throw new ApiError(404, "NotFound", "Unknown index");
+    const [x, p, due] = await Promise.all([
+      d.client.readContract({ address: reg, abi: indexRegistryAbi, functionName: "indexOf", args: [index] }),
+      d.client.readContract({ address: reg, abi: indexRegistryAbi, functionName: "pendingOf", args: [index] }),
+      d.client.readContract({ address: reg, abi: indexRegistryAbi, functionName: "due", args: [index] }),
+    ]);
+    return {
+      mode: x.mode,
+      driftBps: x.driftBps,
+      intervalSec: Number(x.intervalSec),
+      rebalancedAt: Number(x.rebalancedAt),
+      pending: p.at > 0n ? { assets: p.assets, weightsBps: p.weightsBps, reason: p.reason, at: Number(p.at) } : null,
+      due: (["None", "Drop", "Pending", "Auto"] as const)[due] ?? "None",
+    };
+  }
+
+  /** The data index replayed on real daily closes before it was created (cached 5 min; see backfill.ts). */
+  async function backfillFor(r: IndexRow, days: number, join: number | null) {
+    return d.cache.wrap(`backfill:${r.id}:${days}:${join ?? ""}`, 300, async () => {
+      const reg = d.deployment.contracts.indexRegistry;
+      if (!reg || !d.history || r.model !== "data") return [];
+      // the current basket's units (a rebalance re-derives them at the same level, so the replay stays continuous)
+      const x = await d.client.readContract({ address: reg, abi: indexRegistryAbi, functionName: "indexOf", args: [r.id] });
+      const ids = x.assets.map((a) => idByExec.get(a.toLowerCase()) ?? null);
+      if (ids.some((id) => id === null)) return [];
+      const closes = await Promise.all(ids.map(async (id) => (await d.history?.candles(id as string, "1d", days + 2)) ?? []));
+      return backfillLevels(
+        x.units.map((u) => Number(u) / 1e18),
+        closes.map((cs) => cs.map((k) => ({ t: k.t, c: k.c }))),
+        Number(r.createdAt),
+        join,
+        days,
+      );
+    });
+  }
+
+  /** Composition of a data index: its units (whole tokens, 1e18) valued at the last published prices. */
+  async function dataComposition(index: Address) {
+    const reg = d.deployment.contracts.indexRegistry;
+    if (!reg) throw new ApiError(404, "NotFound", "Unknown index");
+    const oracle = d.deployment.contracts.oracle;
+    const x = await d.client.readContract({ address: reg, abi: indexRegistryAbi, functionName: "indexOf", args: [index] });
+    const px = await Promise.all(
+      x.assets.map(async (a) => {
+        const [[p], fresh] = await Promise.all([
+          d.client.readContract({ address: oracle, abi: priceOracleAbi, functionName: "latest", args: [a] }),
+          d.client.readContract({ address: oracle, abi: priceOracleAbi, functionName: "isFresh", args: [a] }),
+        ]);
+        return { p, fresh };
+      }),
+    );
+    const WAD = 10n ** 18n;
+    const values = x.units.map((u, i) => (u * (px[i]?.p ?? 0n)) / WAD);
+    const value = values.reduce((s, v) => s + v, 0n);
+    const drift = (v: bigint, w: number): number => (value === 0n || w === 0 ? 0 : Math.round(Math.abs(Number((v * 10_000n) / value) - w) * 10_000 / w));
+    const legs = x.assets.map((a, i) => {
+      const id = idByExec.get(a.toLowerCase()) ?? null;
+      const meta = id ? byId.get(id) : undefined;
+      const v = values[i] ?? 0n;
+      const w = x.weightsBps[i] ?? 0;
+      return {
+        asset: a,
+        id,
+        symbol: meta ? displaySymbol(meta.symbol) : null,
+        kind: meta?.kind ?? null,
+        balance: x.units[i] ?? 0n,
+        priceWad: px[i]?.p ?? 0n,
+        fresh: px[i]?.fresh ?? false,
+        valueUsdWad: v,
+        currentBps: value === 0n ? 0 : Number((v * 10_000n) / value),
+        targetBps: w,
+        driftBps: drift(v, w),
+      };
+    });
+    return {
+      level: value,
+      value,
+      supply: WAD,
+      maxDriftBps: legs.reduce((m, l) => Math.max(m, l.driftBps), 0),
+      allFresh: legs.every((l) => l.fresh),
+      legs,
+    };
+  }
 
   app.get("/indexes", async () =>
     d.cache.wrap("indexes", d.services.api.cacheSec, async () => {
@@ -382,6 +502,8 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
 
   app.get<{ Params: { id: string } }>("/indexes/:id", async (req) => {
     const r = await indexRow(req.params.id);
+    // a data index holds nothing: no holders, fees or auction plan, only its definition and level
+    if (r.model === "data") return { ...indexView(r), holderCount: 0, rebalance: await dataRebalance(r.id) };
     const c = d.deployment.contracts;
     const [ps, params, protocolBps, creatorBps, tradeFeeBps, holders] = await Promise.all([
       d.reader.planState(r.id),
@@ -429,6 +551,7 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
 
   app.get<{ Params: { id: string } }>("/indexes/:id/composition", async (req) => {
     const r = await indexRow(req.params.id);
+    if (r.model === "data") return dataComposition(r.id);
     const k = await d.reader.basket(r.id);
     return {
       level: k.level,
@@ -490,13 +613,18 @@ export function buildServer(d: ApiDeps, registry: Registry = new Registry()): Fa
     return q.indexHolderss.items.map((h) => ({ ...h, shareBps: supply > 0n ? Number((BigInt(h.units) * 10_000n) / supply) : 0 }));
   });
 
-  app.get<{ Params: { id: string }; Querystring: { limit?: string } }>("/indexes/:id/levels", async (req) => {
+  app.get<{ Params: { id: string }; Querystring: { limit?: string; backfill?: string } }>("/indexes/:id/levels", async (req) => {
     const r = await indexRow(req.params.id);
     const q = await d.gql<{ indexLevelss: { items: { block: string; ts: string; level: string }[] } }>(
       `query($i: String!, $n: Int!) { indexLevelss(where: { index: $i }, orderBy: "block", orderDirection: "desc", limit: $n) { items { block ts level } } }`,
       { i: r.id, n: Math.min(1000, Number(req.query.limit ?? 500)) },
     );
-    return { badge: indexBadge(), levels: q.indexLevelss.items.reverse() };
+    const levels = q.indexLevelss.items.reverse();
+    // `?backfill=<days>`: the data index replayed on real daily closes before it was created (a labelled backtest)
+    const days = Math.min(365, Math.max(0, Math.floor(Number(req.query.backfill ?? 0)) || 0));
+    if (!days || r.model !== "data" || !d.history) return { badge: indexBadge(), levels };
+    const backfill = await backfillFor(r, days, levels[0] ? Number(levels[0].level) / 1e18 : null);
+    return { badge: indexBadge(), levels, backfill: { note: "Before launch: replayed from daily closes with the current basket", points: backfill } };
   });
 
   // ================================================================ creators + portfolio

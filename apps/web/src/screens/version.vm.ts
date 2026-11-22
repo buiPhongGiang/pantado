@@ -11,8 +11,11 @@ import { MODE, PLAN, until, wad, type AssetInfo, type Composition, type Holder, 
 import { dailyCandles } from "./index.chart";
 import { volatility } from "./index.vm";
 
-export type When = "48h" | "72h" | "7 days";
+export type When = "Now" | "48h" | "72h" | "7 days";
 export const WHENS: When[] = ["48h", "72h", "7 days"];
+/** Data index (IndexRegistry): a new basket now or after a notice; nobody holds it, so no minimum notice. */
+export const DATA_WHENS: When[] = ["Now", "48h", "72h", "7 days"];
+export const WHEN_SEC: Record<When, number> = { Now: 0, "48h": 172_800, "72h": 259_200, "7 days": 604_800 };
 
 export interface VersionInput {
   detail: IndexDetail | null;
@@ -34,7 +37,7 @@ export interface VersionState {
 export interface VersionHandlers {
   setWeight: (asset: string, pct: number) => void;
   setWhen: (w: When) => void;
-  schedule: (weightsBps: number[]) => void;
+  schedule: (weightsBps: number[], assets: string[]) => void;
 }
 
 export type Blocker = null | "loading" | "notCreator" | "notManual" | "planInProgress";
@@ -42,6 +45,8 @@ export type Blocker = null | "loading" | "notCreator" | "notManual" | "planInPro
 export function blocker(detail: IndexDetail | null, me: string | null): Blocker {
   if (!detail) return "loading";
   if (!me || detail.creator.toLowerCase() !== me.toLowerCase()) return "notCreator";
+  // a data index takes a new basket in any mode; a new schedule replaces a pending one
+  if (detail.model === "data") return null;
   if (detail.mode !== MODE.Manual) return "notManual";
   const s = detail.plan?.status;
   if (s === PLAN.Scheduled || s === PLAN.Active) return "planInProgress";
@@ -92,7 +97,8 @@ export function versionVM(input: VersionInput, st: VersionState, h: VersionHandl
   const block = blocker(detail, me.address);
   const ok = weightsOk && block === null && !st.pending && st.reason.trim().length > 0;
 
-  const whens = WHENS.map((x) => ({
+  const isData = detail?.model === "data";
+  const whens = (isData ? DATA_WHENS : WHENS).map((x) => ({
     label: x,
     on: x === st.when ? "true" : "false",
     bg: x === st.when ? "#2A2A2F" : "transparent",
@@ -101,8 +107,8 @@ export function versionVM(input: VersionInput, st: VersionState, h: VersionHandl
   }));
 
   // after publishing, the notice is the contract's: show the real start time
-  const startAt = detail?.plan && detail.plan.status === PLAN.Scheduled ? Number(detail.plan.startAt) : null;
-  const whenText = st.done && startAt ? `in ${until(startAt, now)}` : `in ${st.when}`;
+  const startAt = isData ? (detail?.rebalance?.pending?.at ?? null) : detail?.plan && detail.plan.status === PLAN.Scheduled ? Number(detail.plan.startAt) : null;
+  const whenText = st.when === "Now" ? "now" : st.done && startAt ? `in ${until(startAt, now)}` : `in ${st.when}`;
   const value = wad(comp?.value ?? detail?.value);
   const vNow = volatility(dailyCandles(input.levels?.levels ?? [], []).map((c) => c.c));
   const holdersN = input.holders?.length ?? null;
@@ -113,9 +119,9 @@ export function versionVM(input: VersionInput, st: VersionState, h: VersionHandl
     if (total !== 100) return "Weights must total 100%";
     if (!allMin) return "Each weight must be at least 1%";
     if (changed.length === 0) return "Change at least one weight";
-    if (!st.reason.trim()) return "Add a reason for holders";
+    if (!st.reason.trim()) return isData ? "Add a reason" : "Add a reason for holders";
     if (block === "notCreator") return me.address ? BLOCK_LABEL.notCreator : "Connect to publish";
-    return `Schedule ${nextName.toLowerCase()}`;
+    return st.when === "Now" ? `Publish ${nextName.toLowerCase()} now` : `Schedule ${nextName.toLowerCase()}`;
   };
 
   return withInitials({
@@ -140,7 +146,7 @@ export function versionVM(input: VersionInput, st: VersionState, h: VersionHandl
     disabled: ok ? "false" : "true",
     blocker: block,
     schedule: () => {
-      if (ok) h.schedule(rows.map((r) => r.w * 100));
+      if (ok) h.schedule(rows.map((r) => r.w * 100), base.map((b) => b.asset));
     },
     cta: ok ? { bg: "#F2F2F3", fg: "#0B0B0D", label: label() } : { bg: "#1F1F23", fg: "#8E8E96", label: label() },
     _href: detail ? { IndexDetail: `/index/${detail.id}` } : {},

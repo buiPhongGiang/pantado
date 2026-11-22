@@ -254,6 +254,7 @@ input priceUpdatesFilter {
 
 type indexes {
   id: String!
+  model: String!
   ticker: String!
   name: String!
   description: String!
@@ -263,6 +264,8 @@ type indexes {
   driftBps: Int!
   pendingMode: Int
   pendingAt: BigInt
+  intervalSec: BigInt
+  pending: JSON
   assets: JSON!
   targetBps: JSON!
   version: Int!
@@ -295,6 +298,22 @@ input indexesFilter {
   id_ends_with: String
   id_not_starts_with: String
   id_not_ends_with: String
+  model: String
+  model_not: String
+  model_in: [String]
+  model_not_in: [String]
+  model_contains: String
+  model_not_contains: String
+  model_starts_with: String
+  model_ends_with: String
+  model_not_starts_with: String
+  model_not_ends_with: String
+  model_contains_nocase: String
+  model_not_contains_nocase: String
+  model_starts_with_nocase: String
+  model_ends_with_nocase: String
+  model_not_starts_with_nocase: String
+  model_not_ends_with_nocase: String
   ticker: String
   ticker_not: String
   ticker_in: [String]
@@ -389,6 +408,14 @@ input indexesFilter {
   pendingAt_lt: BigInt
   pendingAt_gte: BigInt
   pendingAt_lte: BigInt
+  intervalSec: BigInt
+  intervalSec_not: BigInt
+  intervalSec_in: [BigInt]
+  intervalSec_not_in: [BigInt]
+  intervalSec_gt: BigInt
+  intervalSec_lt: BigInt
+  intervalSec_gte: BigInt
+  intervalSec_lte: BigInt
   version: Int
   version_not: Int
   version_in: [Int]

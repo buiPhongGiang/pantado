@@ -3,6 +3,7 @@
 "use client";
 import { Fragment, type ReactNode } from "react";
 import { A, P, bool, child, css, H, HI, interp, list, lookup, T, type LinkTarget, type Scope } from "../../lib/tpl";
+import { commonSlots } from "../../lib/common-slots";
 
 export const title = "Create index";
 
@@ -15,7 +16,7 @@ export function CreateScreen({
   nav: (target: LinkTarget, scope: Scope) => string;
   slots?: Record<string, (scope: Scope) => ReactNode>;
 }) {
-  const slot = (name: string, s: Scope): ReactNode => slots[name]?.(s) ?? null;
+  const slot = (name: string, s: Scope): ReactNode => (slots[name] ?? commonSlots[name])?.(s) ?? null;
   void A; void P; void HI; void H; void child; void list; void bool; void interp; void T;
   return (
     <div style={css("min-height: 100%; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch")}>
@@ -34,14 +35,7 @@ export function CreateScreen({
           </span>
           {"Ask"}
         </a>
-        <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Swap", v)}>
-          <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <path d="M4 8h13l-3.5-3.5M18 14H5l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          {"Swap"}
-        </a>
+        {slot("navNetwork", v)}
         <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Marketplace", v)}>
           <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
@@ -132,7 +126,7 @@ export function CreateScreen({
           <div role="dialog" aria-labelledby="cr-title" style={css("display: flex; flex-direction: column; gap: 14px; padding: 18px; background: #0B0B0D; border: 1px solid #9052F9; border-radius: 16px")}>
             <div style={css("display: flex; justify-content: space-between; align-items: center; gap: 10px")}>
               <h2 id="cr-title" style={css("margin: 0; font-size: 18px; font-weight: 600")}>
-                {"Review: create and buy"}
+                {T(lookup("reviewTitle", v))}
               </h2>
               <span style={css("padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #1F1F23; color: #B4B4BB")}>
                 {T(lookup("visLabel", v))}
@@ -158,30 +152,9 @@ export function CreateScreen({
                   {T(lookup("modeSummary", v))}
                 </dd>
               </div>
-              <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                <dt style={css("color: #8E8E96")}>
-                  {"First buy"}
-                </dt>
-                <dd style={css("margin: 0; color: #F2F2F3")}>
-                  {T(lookup("firstS", v))}
-                </dd>
-              </div>
-              <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                <dt style={css("color: #8E8E96")}>
-                  {"Creation fee"}
-                </dt>
-                <dd style={css("margin: 0; color: #F2F2F3")}>
-                  {T(lookup("creationFeeS", v))}
-                </dd>
-              </div>
-              <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                <dt style={css("color: #8E8E96")}>
-                  {"Trade fee 0.50%"}
-                </dt>
-                <dd style={css("margin: 0; color: #F2F2F3")}>
-                  {T(lookup("tradeFee", v))}
-                </dd>
-              </div>
+              {slot("rowFirstBuy", v)}
+              {slot("rowCreationFee", v)}
+              {slot("rowTradeFee", v)}
               <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
                 <dt style={css("color: #8E8E96")}>
                   {"Network fee"}
@@ -190,17 +163,10 @@ export function CreateScreen({
                   {T(lookup("me.gasS", v))}
                 </dd>
               </div>
+              {slot("rowPay", v)}
               <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
                 <dt style={css("color: #8E8E96")}>
-                  {"You pay"}
-                </dt>
-                <dd style={css("margin: 0; color: #F2F2F3")}>
-                  {T(lookup("payS", v))}
-                </dd>
-              </div>
-              <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                <dt style={css("color: #8E8E96")}>
-                  {"You receive"}
+                  {T(lookup("receiveLabel", v))}
                 </dt>
                 <dd style={css("margin: 0; color: #F2F2F3")}>
                   {T(lookup("unitsS", v))}
@@ -208,7 +174,7 @@ export function CreateScreen({
               </div>
             </dl>
             <span style={css("font-size: 13px; line-height: 1.5; color: #8E8E96")}>
-              {"One signature creates the index and buys every asset. Starting level 100. If any purchase fails or a price is out of date, nothing is created and you keep your USDC."}
+              {T(lookup("reviewNote", v))}
             </span>
             <div style={css("display: grid; grid-template-columns: 1fr 2fr; gap: 8px")}>
               <button type="button" onClick={H(lookup("back", v))} style={css("min-height: 52px; background: #1A1A1D; color: #F2F2F3; border: 0; border-radius: 12px; font-size: 15px; font-weight: 600")}>
@@ -378,14 +344,7 @@ export function CreateScreen({
                   {T(lookup("dd", v))}
                 </dd>
               </div>
-              <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 14px; padding: 14px")}>
-                <dt style={css("font-size: 11px; color: #8E8E96; text-transform: uppercase; letter-spacing: 0.04em")}>
-                  {"Slippage $1k"}
-                </dt>
-                <dd style={css("margin: 6px 0 0; font-family: 'Inter Tight', sans-serif; font-size: 20px; font-weight: 600")}>
-                  {T(lookup("slip", v))}
-                </dd>
-              </div>
+              {slot("slipCard", v)}
             </dl>
             <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px")}>
               <div style={css("display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px")}>
@@ -433,23 +392,15 @@ export function CreateScreen({
                   </button>
                   </Fragment>); })}
               </div>
-              <div style={css("display: flex; align-items: center; gap: 8px; padding: 0 12px; min-height: 44px; background: #131316; border-radius: 12px")}>
-                <label htmlFor="first-buy" style={css("font-size: 13px; color: #8E8E96; white-space: nowrap")}>
-                  {"First buy"}
-                </label>
-                <input id="first-buy" type="number" min="100" step="any" value={T(lookup("first", v))} onChange={HI(lookup("onFirst", v))} style={css("width: 80px; height: 40px; background: transparent; border: 0; color: #F2F2F3; font-family: inherit; font-size: 16px; font-weight: 600")} />
-                <span style={css("font-size: 13px; color: #8E8E96")}>
-                  {"USDC"}
-                </span>
-              </div>
+              {slot("firstBuy", v)}
               <span style={css("display: flex; flex-direction: column; gap: 2px; font-size: 13px")}>
                 <span style={css("color: #B4B4BB")}>
-                  {interp("{{ feeLine }} · trade fee 0.50%", v)}
+                  {T(lookup("feeLine", v))}
                 </span>
                 {bool(lookup("isPublic", v)) && (
                   <>
                   <span style={css("color: #8E8E96")}>
-                    {"You earn 0.20% of every buy and sell"}
+                    {T(lookup("earnNote", v))}
                   </span>
                   </>)}
               </span>

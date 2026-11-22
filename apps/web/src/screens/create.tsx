@@ -1,21 +1,20 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { parseEventLogs, type Address } from "viem";
-import { indexFactoryAbi, indexVaultAbi, RebalanceMode, tx as txb } from "@pantado/sdk";
-import { apiGet, apiPost, ApiRequestError, useApi } from "../lib/api";
+import { indexRegistryAbi, RebalanceMode, tx as txb, type TxRequest } from "@pantado/sdk";
+import { apiGet, ApiRequestError, useApi } from "../lib/api";
 import { useChrome } from "../lib/chrome";
 import { CONFIG } from "../lib/config";
 import { nav } from "../lib/nav";
 import { Shell } from "../lib/shell";
 import { css, lookup, type Scope } from "../lib/tpl";
 import { useTx, useWallet } from "../lib/wallet";
-import { useQuote } from "./asset";
-import type { AssetView, CandlesView, CreateQuote, IndexView, PresetView } from "./asset.api";
+import type { AssetView, CandlesView, IndexView, PresetView } from "./asset.api";
 import { Notices, TxStatusLine } from "./asset.parts";
 import type { Notice, TxLine } from "./asset.states";
 import { forkPrefill, parseDraft, type PresetKey, type Prefill } from "./create.draft";
-import { backtest, slippage1k, type DailyClose } from "./create.metrics";
-import { createVM, MAX_ASSETS, validate, type CreateState } from "./create.vm";
+import { backtest, type DailyClose } from "./create.metrics";
+import { AUTO_INTERVAL_DAYS, createVM, MAX_ASSETS, validate, type CreateState } from "./create.vm";
 import { CreateScreen, title } from "./gen/Create.gen";
 
 const INITIAL: CreateState = {
@@ -27,9 +26,8 @@ const INITIAL: CreateState = {
   ticker: "",
   description: "",
   vis: "Private",
-  mode: "Auto",
+  mode: "Manual",
   drift: 50,
-  first: "100",
   step: "edit",
 };
 
@@ -65,7 +63,7 @@ const slots = {
 
 const addrOf = (a: AssetView): Address | null => (CONFIG.deployment?.assets[a.id] as Address | undefined) ?? (a.execution.address as Address | null);
 
-export default function Create({ draft, fork }: { draft?: string; fork?: string }) {
+export default function Create({ draft, fork, edit }: { draft?: string; fork?: string; edit?: string }) {
   const [s, setS] = useState<CreateState>(INITIAL);
   // the review opens under the "Review" button at the bottom (globals.css, B94): bring it into view
   useEffect(() => {
@@ -79,17 +77,20 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
   const [formKey, setFormKey] = useState(0);
   const [presetError, setPresetError] = useState<string | null>(null);
   const [tickerTaken, setTickerTaken] = useState<boolean | null>(null);
-  const [creationFee, setCreationFee] = useState<bigint | null>(null);
   const [closes, setCloses] = useState<Record<string, DailyClose[]>>({});
-  const [created, setCreated] = useState<{ index: string | null; units: string | null } | null>(null);
+  const [created, setCreated] = useState<{ index: string | null } | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const w = useWallet();
   const t = useTx();
   const { me } = useChrome();
   const assets = useApi<AssetView[]>("/assets", 30_000);
-  const forkIx = useApi<IndexView>(fork ? `/indexes/${encodeURIComponent(fork)}` : null);
+  // fork copies another index's basket; edit loads your own data index to publish a new basket for it
+  const source = edit ?? fork;
+  const forkIx = useApi<IndexView>(source ? `/indexes/${encodeURIComponent(source)}` : null);
+  const editing = edit && forkIx.data && forkIx.data.model === "data" ? { ticker: forkIx.data.ticker, name: forkIx.data.name } : null;
   const byId = useMemo(() => new Map((assets.data ?? []).filter((a) => a.kind !== "quote").map((a) => [a.id, a])), [assets.data]);
-  const factory = CONFIG.deployment?.contracts.factory ?? null;
+  // indexes are defined on the IndexRegistry (B101): no deposit, the level follows published prices
+  const registryAddr = CONFIG.deployment?.contracts.indexRegistry ?? null;
 
   // ---- pre-fill (agent draft or fork), once the registry is loaded
   const prefilled = useRef(false);
@@ -115,15 +116,20 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
       const p = parseDraft(draft, new Set(byId.keys()));
       if (p) apply(p);
       else prefilled.current = true;
-    } else if (fork && forkIx.data) {
+    } else if (source && forkIx.data) {
       const idByAddr = new Map<string, string>();
       for (const a of byId.values()) {
         const x = addrOf(a);
         if (x) idByAddr.set(x.toLowerCase(), a.id);
       }
-      apply(forkPrefill(forkIx.data.assets, forkIx.data.targetBps, idByAddr));
+      const p = forkPrefill(forkIx.data.assets, forkIx.data.targetBps, idByAddr);
+      const ix = forkIx.data;
+      if (edit) {
+        apply({ ...p, name: ix.name, ticker: ix.ticker, mode: ix.mode === 2 ? "Auto" : ix.mode === 1 ? "Manual" : "Off" });
+        if (ix.mode === 2 && ix.driftBps) set({ drift: Math.round(ix.driftBps / 100) });
+      } else apply(p);
     }
-  }, [draft, fork, forkIx.data, byId, apply]);
+  }, [draft, source, edit, forkIx.data, byId, apply, set]);
 
   // ---- uncontrolled reference inputs (name, description, asset search): read through a delegated listener
   useEffect(() => {
@@ -139,16 +145,16 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
     else if (el.tagName === "TEXTAREA") set({ description: el.value.slice(0, 280) });
   };
 
-  // ---- ticker uniqueness (factory read) and creation fee (factory limits)
+  // ---- ticker uniqueness (registry read)
   useEffect(() => {
-    if (!factory || !/^[A-Z0-9]{2,6}$/.test(s.ticker)) {
+    if (!registryAddr || !/^[A-Z0-9]{2,6}$/.test(s.ticker)) {
       setTickerTaken(null);
       return;
     }
     let live = true;
     const h = setTimeout(() => {
       w.pub
-        .readContract({ address: factory, abi: indexFactoryAbi, functionName: "isTickerTaken", args: [s.ticker] })
+        .readContract({ address: registryAddr, abi: indexRegistryAbi, functionName: "isTickerTaken", args: [s.ticker] })
         .then((x) => live && setTickerTaken(Boolean(x)))
         .catch(() => live && setTickerTaken(null));
     }, 400);
@@ -156,16 +162,9 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
       live = false;
       clearTimeout(h);
     };
-  }, [s.ticker, factory, w.pub]);
-  useEffect(() => {
-    if (!factory) return;
-    w.pub
-      .readContract({ address: factory, abi: indexFactoryAbi, functionName: "limits" })
-      .then((l) => setCreationFee((l as readonly bigint[])[0] ?? null))
-      .catch(() => setCreationFee(null));
-  }, [factory, w.pub]);
+  }, [s.ticker, registryAddr, w.pub]);
 
-  // ---- metrics: daily closes per picked asset → backtest; $1k create quote → slippage
+  // ---- metrics: daily closes per picked asset → backtest
   const pickedKey = s.picked.join(",");
   useEffect(() => {
     const missing = s.picked.filter((id) => !(id in closes));
@@ -192,14 +191,6 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
   const addrs = sel.map(addrOf);
   const weightsBps = s.picked.map((id) => (s.w[id] ?? 0) * 100);
   const basketOk = sel.length >= 2 && addrs.every((a) => a !== null) && weightsBps.reduce((x, y) => x + y, 0) === 10_000 && weightsBps.every((x) => x >= 100);
-  const basketKey = basketOk ? `${addrs.join(",")}|${weightsBps.join(",")}` : null;
-  const slipQ = useQuote<CreateQuote>(basketKey ? `1k|${basketKey}` : null, () =>
-    apiPost<CreateQuote>("/quote/create", { assets: addrs, weightsBps, usdcIn: "1000000000" }),
-  );
-  const usdcIn = BigInt(Math.round((Number(s.first) || 0) * 1e6));
-  const reviewQ = useQuote<CreateQuote>(s.step === "review" && basketKey ? `rv|${basketKey}|${usdcIn}` : null, () =>
-    apiPost<CreateQuote>("/quote/create", { assets: addrs, weightsBps, usdcIn: usdcIn.toString() }),
-  );
 
   // ---- actions
   const toggle = (id: string): void =>
@@ -218,64 +209,63 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
       })
       .catch((e: unknown) => setPresetError(e instanceof ApiRequestError ? e.message : "Cannot reach the Pantado API."));
   };
+  const driftBps = Math.min(20_000, Math.max(1_000, s.drift * 100));
+  const modeArgs = (): { mode: (typeof RebalanceMode)[keyof typeof RebalanceMode]; driftBps: number; intervalSec: bigint } =>
+    s.mode === "Auto" ? { mode: RebalanceMode.Auto, driftBps, intervalSec: BigInt(AUTO_INTERVAL_DAYS * 86_400) } : { mode: RebalanceMode[s.mode], driftBps: 0, intervalSec: 0n };
   const confirm = (): void => {
-    const dep = CONFIG.deployment;
-    if (!dep || !w.address || !basketOk) return;
-    const owner = w.address;
-    // spec §9.5: refresh the quote right before signing (never sign on a missing or stale quote)
-    void apiPost<CreateQuote>("/quote/create", { assets: addrs, weightsBps, usdcIn: usdcIn.toString() })
-      .catch(() => reviewQ.data)
-      .then((fresh) => {
-        const q = fresh ?? reviewQ.data;
-        if (!q) return;
-        const total = BigInt(q.usdcIn) + BigInt(q.creationFee);
-        return t
+    if (!registryAddr || !w.address || !basketOk) return;
+    const basket = addrs.filter((a): a is Address => a !== null);
+    const m = modeArgs();
+    if (editing && edit) {
+      // a new basket now (the level carries over); a changed rebalance mode in the same signature batch
+      const reqs: TxRequest[] = [txb.rebalanceIndex(registryAddr, edit as Address, basket, weightsBps, s.description.trim() || "New basket", 0n)];
+      const ix = forkIx.data;
+      if (ix && (ix.mode !== m.mode || (m.mode === RebalanceMode.Auto && ix.driftBps !== m.driftBps))) reqs.push(txb.setIndexMode(registryAddr, edit as Address, m.mode, m.driftBps, m.intervalSec));
+      void t.run(reqs).then((hash) => {
+        if (!hash) return;
+        setCreated({ index: edit });
+        set({ step: "done" });
+      });
+      return;
+    }
+    void t
       .run([
-        txb.approve(dep.contracts.usdc, dep.contracts.factory, total),
-        txb.createAndBuy(dep.contracts.factory, {
+        txb.defineIndex(registryAddr, {
           name: s.name.trim(),
           ticker: s.ticker,
           description: s.description.trim(),
-          assets: addrs.filter((a): a is Address => a !== null),
+          assets: basket,
           weightsBps,
-          mode: RebalanceMode[s.mode],
-          driftBps: Math.min(20_000, Math.max(1_000, s.drift * 100)),
           isPublic: s.vis === "Public",
-          usdcIn: BigInt(q.usdcIn),
-          minUnits: BigInt(q.minUnits),
+          ...m,
         }),
       ])
       .then(async (hash) => {
         if (!hash) return;
         let index: string | null = null;
-        let units: string | null = q.units;
         try {
           const rc = await w.pub.getTransactionReceipt({ hash });
-          const ev = parseEventLogs({ abi: indexFactoryAbi, eventName: "IndexCreated", logs: rc.logs })[0];
-          index = ev ? (ev.args as { index: Address }).index : null;
-          if (index) units = String(await w.pub.readContract({ address: index as Address, abi: indexVaultAbi, functionName: "balanceOf", args: [owner] }));
+          const ev = parseEventLogs({ abi: indexRegistryAbi, eventName: "IndexCreated", logs: rc.logs })[0];
+          index = ev ? ev.args.index : null;
         } catch {
-          /* keep the quoted units */
+          /* the banner still links to Portfolio */
         }
-        setCreated({ index, units });
+        setCreated({ index });
         set({ step: "done" });
-      });
       });
   };
 
   const v = createVM({
     s,
     assets: assets.data ?? [],
-    tickerTaken,
-    creationFee,
+    tickerTaken: editing ? false : tickerTaken,
+    editing,
     presetError: presetError ?? (assets.error ? assets.error.message : forkIx.error ? forkIx.error.message : null),
     backtest: bt,
-    slip: slippage1k(slipQ.data),
-    quote: reviewQ,
     tx: t.state,
     created,
     wallet: { connected: w.address !== null, chainOk: w.chainOk },
-    env: { network: CONFIG.network, explorer: CONFIG.explorer, nowSec: Math.floor(Date.now() / 1000), deployed: !!CONFIG.deployment },
+    env: { network: CONFIG.network, explorer: CONFIG.explorer, nowSec: Math.floor(Date.now() / 1000), deployed: !!registryAddr },
     actions: {
       set: (p) => {
         if (p.step === "edit") t.reset();
@@ -285,7 +275,7 @@ export default function Create({ draft, fork }: { draft?: string; fork?: string 
       setW: (id, val) => setS((x) => ({ ...x, w: { ...x.w, [id]: Math.max(0, Math.min(100, Math.round(val))) } })),
       preset,
       review: () => {
-        if (validate(s, tickerTaken)) return;
+        if (validate(s, editing ? false : tickerTaken)) return;
         t.reset();
         set({ step: "review" });
         try {

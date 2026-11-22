@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import { createPublicClient, http } from "viem";
 import { Registry } from "prom-client";
 import { createLogger, envInt, onShutdown, runLoop, startHealthServer } from "@pantado/service-kit";
-import { loadAssets, loadProfile, loadServices } from "@pantado/shared";
+import { loadAssets, loadPriceChain, loadProfile, loadServices, loadVnMarket } from "@pantado/shared";
 import { redisSink } from "./redis-sink.js";
 import { MarketData } from "./service.js";
 import { dateTs, PriceHistory } from "./history.js";
@@ -10,6 +10,8 @@ import { scanHistory, type HistoryJob } from "./history-scan.js";
 import { readVolume, Volume24h } from "./volume.js";
 import { RpcSwapReader } from "./sources/rpc-swaps.js";
 import { stockApiFromEnv } from "./sources/stock-api.js";
+import { VnMarket } from "@pantado/shared";
+import { PriceChainReader } from "./sources/pricechain.js";
 
 async function main(): Promise<void> {
   const log = createLogger("market-data");
@@ -24,7 +26,10 @@ async function main(): Promise<void> {
   const rhRpc = rpcs(profile.data.robinhood);
   const sink = process.env.REDIS_URL
     ? await redisSink(process.env.REDIS_URL, services.marketData.redisTtlSec, (id) =>
-        assets.find((a) => a.id === id)?.kind === "stock" ? "robinhood" : "avalanche",
+        {
+          const a = assets.find((x) => x.id === id);
+          return a?.kind === "stock" ? a.display.chain : "avalanche";
+        },
       )
     : null;
   const registry = new Registry();
@@ -42,6 +47,22 @@ async function main(): Promise<void> {
   const history = mode === "live" ? new PriceHistory(dateTs(hcfg.since), hcfg.barSec) : null;
   const historyFile = process.env.HISTORY_FILE;
   if (history && historyFile && history.loadFile(historyFile)) log.info("history loaded", { file: historyFile, assets: history.ids().length });
+  // Vietnamese stocks: HOSE matched trades polled during the session (config/vn-market.json); live mode only
+  const vnStocks = assets.filter((a) => a.kind === "stock" && a.display.chain === "hose").map((a) => ({ id: a.id, symbol: a.symbol }));
+  const vnCfg = mode === "live" && vnStocks.length ? loadVnMarket() : null;
+  const vn = vnCfg ? new VnMarket(vnCfg, vnStocks, undefined, undefined, (msg, extra) => log.warn(msg, extra ?? {})) : null;
+  if (vn) void vn.start().then(() => log.info("vn stocks loaded", { stocks: vnStocks.length, vndPerUsd: vn.vndPerUsd() }));
+  // Pantado Price Chain (PRICECHAIN_NETWORK, e.g. "local"): canonical Vietnamese prices finalized on the L1 via ICM
+  const pcNet = mode === "live" ? process.env.PRICECHAIN_NETWORK : undefined;
+  let priceChain: PriceChainReader | null = null;
+  if (pcNet) {
+    const { cfg: pcCfg, deployment: pcDep } = loadPriceChain(pcNet);
+    const n = pcCfg.networks[pcNet];
+    if (n && pcDep) {
+      priceChain = new PriceChainReader(n.cchain.rpc, pcDep.cchain.receiver);
+      log.info("vn prices from the price chain", { network: pcNet, receiver: pcDep.cchain.receiver });
+    } else log.warn("price chain not deployed; vn prices read directly", { network: pcNet });
+  }
   const md = new MarketData({
     assets,
     profile,
@@ -50,6 +71,8 @@ async function main(): Promise<void> {
     avalanche,
     robinhood,
     stockApi,
+    vn,
+    priceChain,
     sink,
     log,
     registry,
@@ -66,6 +89,13 @@ async function main(): Promise<void> {
     const limit = Math.min(Math.max(Number(req.query.limit ?? 500) || 500, 1), 5000);
     const before = req.query.before !== undefined ? Number(req.query.before) : undefined;
     if (before !== undefined && !Number.isFinite(before)) return reply.code(400).send({ error: "before must be unix seconds" });
+    const vs = vn?.symbolOf(req.params.id) ?? null;
+    if (vn && vs) {
+      // Vietnamese stocks: daily bars (one year) and the last days' 1-minute bars, in USD at today's rate
+      if (before !== undefined) return { candles: [], coveredFrom: null };
+      const candles = vn.candles(vs, sec, limit).map(({ t, o, h, l, c }) => ({ t, o, h, l, c }));
+      return { candles, coveredFrom: candles[0]?.t ?? null };
+    }
     if (!history) return { candles: [], coveredFrom: null };
     const now = Math.floor(Date.now() / 1000);
     const from = history.coveredFrom(req.params.id);
@@ -74,21 +104,43 @@ async function main(): Promise<void> {
     const candles = from === null ? [] : all.filter((c) => c.t >= from);
     return { candles, coveredFrom: from };
   });
+  // VND per USD (Vietcombank transfer rate) so the app can show Vietnamese prices in ₫; null without VN stocks
+  app.get("/internal/fx", async () => {
+    const r = vn?.vndPerUsd() ?? 0;
+    return { vndPerUsd: r > 0 ? r : null };
+  });
   app.get("/internal/changes", async () => {
     const now = Math.floor(Date.now() / 1000);
     const out: Record<string, { d1: number | null; d7: number | null; d30: number | null }> = {};
     if (history) for (const p of md.snapshot().prices) out[p.id] = history.changes(p.id, now, Number(p.canonical.usd));
+    if (vn)
+      for (const id of vn.ids()) {
+        const q = vn.quote(vn.symbolOf(id) ?? "");
+        if (q) out[id] = { d1: q.change24h, d7: q.change7d, d30: q.change30d };
+      }
     return { asOf: now, changes: out };
   });
   // reference-market 24h volume (B73): per asset and the market total; null until a full window has been read
   const vcfg = services.marketData.volume;
   const volume = mode === "live" ? new Volume24h(vcfg.windowSec) : null;
   const volumeChains: ("avalanche" | "robinhood")[] = [];
+  // Vietnamese stocks: traded value of the latest HOSE session
+  const vnVolume = (): Record<string, number> => {
+    const out: Record<string, number> = {};
+    if (vn)
+      for (const id of vn.ids()) {
+        const v = vn.quote(vn.symbolOf(id) ?? "")?.sessionValueUsd;
+        if (v !== null && v !== undefined) out[id] = v;
+      }
+    return out;
+  };
   app.get("/internal/volume", async () => {
     const now = Math.floor(Date.now() / 1000);
-    if (!volume || !volume.ready(volumeChains)) return { asOf: now, windowSec: vcfg.windowSec, ready: false, total: null, volume: {} };
+    const vv = vnVolume();
+    if (!volume || !volume.ready(volumeChains)) return { asOf: now, windowSec: vcfg.windowSec, ready: false, total: null, volume: vv };
     const t = volume.totals(now);
-    return { asOf: now, windowSec: vcfg.windowSec, ready: true, total: t.total, volume: Object.fromEntries(t.byAsset) };
+    const vnTotal = Object.values(vv).reduce((s, x) => s + x, 0);
+    return { asOf: now, windowSec: vcfg.windowSec, ready: true, total: t.total + vnTotal, volume: { ...Object.fromEntries(t.byAsset), ...vv } };
   });
   const port = envInt("PORT", 8080);
   await app.listen({ port, host: "0.0.0.0" });
@@ -204,6 +256,7 @@ async function main(): Promise<void> {
     if (saver) clearInterval(saver);
     await Promise.race([scanning, sleep(10_000)]);
     save();
+    vn?.stop();
     await loop.stop();
     await app.close();
     await hs.close();

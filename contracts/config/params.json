@@ -46,8 +46,17 @@
   "swapRouter": {
     "swapFeeBps": 10
   },
+  "registry": {
+    "maxPublicPerCreator": 20,
+    "minRebalanceSec": 86400,
+    "minIntervalSec": 86400,
+    "intervalSec": 2592000,
+    "maxNoticeSec": 2592000,
+    "dropStaleSec": 604800
+  },
   "demoOverrides": {
     "noticeSec": 600,
-    "modeChangeDelaySec": 600
+    "modeChangeDelaySec": 600,
+    "minRebalanceSec": 60
   }
 }

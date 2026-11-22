@@ -85,7 +85,7 @@ describe("reference-market volume", () => {
     const confirmed = (loadProfile("contest").data.avalanche.pools ?? []).filter((p) => p.confirmed);
     expect(vp.avalanche.length).toBe(confirmed.length);
     for (const p of vp.avalanche) expect(p.ids.every((x) => typeof x === "string")).toBe(true);
-    const stocks = loadAssets().filter((a) => a.kind === "stock");
+    const stocks = loadAssets().filter((a) => a.kind === "stock" && a.display.chain === "robinhood"); // HOSE stocks: off-chain volume
     expect(vp.robinhood.map((p) => p.ids.find((x) => x !== null)).sort()).toEqual(stocks.map((a) => a.id).sort());
     for (const p of vp.robinhood) {
       const quoteSide = p.ids.indexOf(null);

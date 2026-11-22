@@ -81,6 +81,8 @@ export interface IndexView {
   description: string;
   creator: string;
   isPublic: boolean;
+  /** "data": IndexRegistry index (no deposit); "vault": legacy */
+  model?: "vault" | "data";
   mode: number;
   driftBps: number;
   assets: string[];

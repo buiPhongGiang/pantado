@@ -13,9 +13,11 @@ const board: AskBoardRow[] = [
 ];
 
 describe("ask suggestions", () => {
-  it("Today: real index for the buy row and real 24h moves", () => {
+  it("Today: real index for the index row (a question, no buying) and real 24h moves", () => {
     const rows = suggestions("Today", "Auto", board);
-    expect(rows[0]).toMatchObject({ text: "Buy Tech + BTC for $50", buy: true, ask: false, weight: 600, _href: { IndexDetail: "/index/0xI1" } });
+    const q = "What is inside Tech + BTC, and how has it done?";
+    expect(rows[0]).toMatchObject({ text: q, buy: false, ask: true, weight: 600, lead: true, _href: { AskChat: askHref(q, "Auto") } });
+    expect(rows.some((r) => r.buy)).toBe(false);
     expect(rows[1]).toMatchObject({ chip: true, sym: "AVAX", nm: "Avalanche", dot: "#E84142", text: "is down 5.2% today. What is moving it?" });
     expect(rows[1]?._href.AskChat).toBe(askHref("AVAX is down 5.2% today. What is moving it?", "Auto"));
     expect(rows[3]).toMatchObject({ sym: "NVDA", text: "is up 3.1% today. How volatile has it been over 90 days?" });
@@ -25,13 +27,13 @@ describe("ask suggestions", () => {
     const rows = suggestions("Today", "Deep", []);
     expect(rows.map((r) => r.text)).toEqual(["Which public index moved most over 30 days?", "Build a low-volatility basket of five assets."]);
     expect(rows[0]?._href.AskChat).toContain("mode=deep");
-    expect(suggestions("Tokens", "Auto", board.filter((r) => r.kind !== "index")).some((r) => r.buy)).toBe(false);
+    expect(suggestions("Tokens", "Auto", board.filter((r) => r.kind !== "index")).some((r) => r.lead)).toBe(false);
   });
 
   it("Stocks and Tokens tabs pick matching indexes", () => {
-    expect(suggestions("Stocks", "Auto", board)[0]?.text).toBe("Buy Tech + BTC for $50");
-    expect(suggestions("Tokens", "Auto", board)[0]?.text).toBe("Buy Blue Chips for $50");
-    expect(suggestions("Indexes", "Auto", board)[0]?.text).toBe("Buy Blue Chips for $50");
+    expect(suggestions("Stocks", "Auto", board)[0]?.text).toBe("What is inside Tech + BTC, and how has it done?");
+    expect(suggestions("Tokens", "Auto", board)[0]?.text).toBe("What is inside Blue Chips, and how has it done?");
+    expect(suggestions("Indexes", "Auto", board)[0]?.text).toBe("What is inside Blue Chips, and how has it done?");
     expect(suggestions("Indexes", "Auto", board)[2]?.text).toBe("Compare Tech + BTC with holding AVAX.");
   });
 
@@ -57,7 +59,7 @@ describe("askVM", () => {
     expect(askHref("   ", "Auto")).toBe("/ask");
   });
 
-  it("the agent's questions of the day come after the buy row, chips for assets, topped up from the built-in rows", () => {
+  it("the agent's questions of the day come after the index row, chips for assets, topped up from the built-in rows", () => {
     const daily = {
       date: "2026-11-16",
       tabs: {
@@ -69,10 +71,10 @@ describe("askVM", () => {
       },
     };
     const rows = suggestions("Today", "Auto", board, daily);
-    expect(rows[0]?.buy).toBe(true);
+    expect(rows[0]?.lead).toBe(true);
     expect(rows[1]).toMatchObject({ chip: true, sym: "NVDA", text: "is down 26.8% over 30 days. How volatile has it been?" });
     expect(rows[2]).toMatchObject({ chip: false, text: "Which token traded the most today?" });
-    expect(rows).toHaveLength(5); // buy + 4: two of the day's, two built-in
+    expect(rows).toHaveLength(5); // index row + 4: two of the day's, two built-in
     // a tab the agent left empty keeps its built-in rows
     expect(suggestions("Tokens", "Auto", board, daily)).toEqual(suggestions("Tokens", "Auto", board));
   });

@@ -5,3 +5,5 @@ Co phieu: nvstly/icons (PNG, mot so logo mau trang danh cho nen toi: aapl, amzn,
   spcx, crcl: SVG mot mau tu simple-icons.
 Vi/social: core = ava-labs/core-extension; metamask = MetaMask/metamask-extension;
   walletconnect = WalletConnect/walletconnect-assets; google = firebase/firebaseui-web; x = simple-icons.
+Co phieu Viet Nam (HOSE: fpt, vcb, hpg, ...): logo cong ty lay tu cdn.simplize.vn/simplizevn/logo/<MA>.jpeg,
+  cat vien va dat giua o vuong 128x128 nen trang. Logo thuoc ve cac cong ty tuong ung.

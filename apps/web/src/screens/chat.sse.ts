@@ -1,3 +1,4 @@
+import type { Turn } from "./chat.store";
 /**
  * Client for the agent's Ask stream (PORTING.md › Agent): `POST {agentUrl}/ask` with
  * `{ message, mode, sessionId }` → Server-Sent Events `meta` · `token` · `card` · `done` · `error`.
@@ -143,5 +144,23 @@ export async function askStream(agentUrl: string, body: AskBody, onEvent: (e: As
     throw new AgentError("Stream", "The answer stream was interrupted.");
   } finally {
     reader.releaseLock();
+  }
+}
+
+/** Fold one streamed event into the turn being answered. */
+export function applyEvent(t: Turn, e: AskEvent): Turn {
+  switch (e.type) {
+    case "token":
+      return { ...t, text: t.text + e.text };
+    case "card":
+      return { ...t, cards: [...t.cards, e.card] };
+    case "meta":
+      return { ...t, meta: { tools: e.tools, ms: e.ms } };
+    case "related":
+      return { ...t, related: e.questions };
+    case "done":
+      return { ...t, status: "done" };
+    default:
+      return t;
   }
 }

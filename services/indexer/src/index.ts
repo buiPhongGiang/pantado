@@ -63,21 +63,45 @@ ponder.on("IndexFactory:setup", async ({ context }) => {
 
 // ---------------------------------------------------------------- factory
 
-ponder.on("IndexFactory:IndexCreated", async ({ event, context }) => {
+interface CreatedArgs {
+  index: Hex;
+  creator: Hex;
+  ticker: string;
+  name: string;
+  description: string;
+  assets: readonly Hex[];
+  weightsBps: readonly number[];
+  mode: number;
+  driftBps: number;
+  isPublic: boolean;
+  creationFee: bigint;
+}
+interface EventMeta {
+  args: CreatedArgs;
+  block: { number: bigint; timestamp: bigint };
+  transaction: { hash: Hex };
+  log: { logIndex: number };
+}
+
+/** Index row + basket rows. A data index (IndexRegistry) keeps its units in `index_assets.balance` as whole tokens
+ *  in 1e18 (decimals 18) and a supply of 1e18, so the shared level math gives level = Σ units × price. */
+async function onIndexCreated(context: Context, event: EventMeta, model: "vault" | "data"): Promise<void> {
   const { db } = context;
-  const index = lower(event.args.index);
-  const assets = event.args.assets.map(lower);
+  const a = event.args;
+  const index = lower(a.index);
+  const assets = a.assets.map(lower);
   await db.insert(schema.indexes).values({
     id: index,
-    ticker: event.args.ticker,
-    name: event.args.name,
-    description: event.args.description,
-    creator: lower(event.args.creator),
-    isPublic: event.args.isPublic,
-    mode: event.args.mode,
-    driftBps: event.args.driftBps,
+    model,
+    ticker: a.ticker,
+    name: a.name,
+    description: a.description,
+    creator: lower(a.creator),
+    isPublic: a.isPublic,
+    mode: a.mode,
+    driftBps: a.driftBps,
     assets,
-    targetBps: [...event.args.weightsBps],
+    targetBps: [...a.weightsBps],
     version: 1,
     supply: 0n,
     level: 0n,
@@ -88,28 +112,144 @@ ponder.on("IndexFactory:IndexCreated", async ({ event, context }) => {
     createdBlock: event.block.number,
     createTx: event.transaction.hash,
   });
-  for (const [i, a] of assets.entries()) {
-    const tok = await db.find(schema.tokens, { id: a });
-    await db.insert(schema.indexAssets).values({ id: `${index}:${a}`, index, asset: a, position: i, decimals: tok?.decimals ?? 18, balance: 0n });
+  for (const [i, asset] of assets.entries()) {
+    const tok = await db.find(schema.tokens, { id: asset });
+    const decimals = model === "data" ? 18 : (tok?.decimals ?? 18);
+    await db.insert(schema.indexAssets).values({ id: `${index}:${asset}`, index, asset, position: i, decimals, balance: 0n });
     await db
       .insert(schema.assetIndexes)
-      .values({ id: a, indexes: [index] })
+      .values({ id: asset, indexes: [index] })
       .onConflictDoUpdate((r) => ({ indexes: [...r.indexes, index] }));
   }
   await db.insert(schema.indexEvents).values({
     id: eventId(context.chain.id, event),
     index,
     kind: "create",
-    account: lower(event.args.creator),
-    usdc: event.args.creationFee,
-    data: { mode: event.args.mode, driftBps: event.args.driftBps, isPublic: event.args.isPublic },
+    account: lower(a.creator),
+    usdc: a.creationFee,
+    data: { mode: a.mode, driftBps: a.driftBps, isPublic: a.isPublic, model },
+    ts: event.block.timestamp,
+    block: event.block.number,
+    txHash: event.transaction.hash,
+  });
+}
+
+ponder.on("IndexFactory:IndexCreated", async ({ event, context }) => {
+  await onIndexCreated(context, event, "vault");
+});
+
+ponder.on("IndexFactory:VisibilityChanged", async ({ event, context }) => {
+  const index = lower(event.args.index);
+  await context.db.update(schema.indexes, { id: index }).set({ isPublic: event.args.isPublic });
+  await context.db.insert(schema.indexEvents).values({
+    id: eventId(context.chain.id, event),
+    index,
+    kind: "visibility",
+    data: { isPublic: event.args.isPublic },
     ts: event.block.timestamp,
     block: event.block.number,
     txHash: event.transaction.hash,
   });
 });
 
-ponder.on("IndexFactory:VisibilityChanged", async ({ event, context }) => {
+// ---------------------------------------------------------------- index registry (indexes as data)
+
+ponder.on("IndexRegistry:IndexCreated", async ({ event, context }) => {
+  await onIndexCreated(context, event, "data");
+});
+
+const DATA_SUPPLY = 10n ** 18n;
+
+ponder.on("IndexRegistry:UnitsSet", async ({ event, context }) => {
+  const { db } = context;
+  const index = lower(event.args.index);
+  const ix = await db.find(schema.indexes, { id: index });
+  if (!ix) return;
+  const assets = event.args.assets.map(lower);
+  // assets can change on a rebalance (manual new basket, or a dropped asset): rebuild the basket rows and the
+  // asset → indexes map so price pushes refresh the right indexes
+  for (const old of ix.assets) {
+    if (assets.includes(old)) continue;
+    await db.delete(schema.indexAssets, { id: `${index}:${old}` });
+    const m = await db.find(schema.assetIndexes, { id: old });
+    if (m) await db.update(schema.assetIndexes, { id: old }).set({ indexes: m.indexes.filter((x) => x !== index) });
+  }
+  for (const [i, asset] of assets.entries()) {
+    const units = event.args.units[i] ?? 0n;
+    await db
+      .insert(schema.indexAssets)
+      .values({ id: `${index}:${asset}`, index, asset, position: i, decimals: 18, balance: units })
+      .onConflictDoUpdate({ position: i, balance: units });
+    if (!ix.assets.includes(asset)) {
+      await db
+        .insert(schema.assetIndexes)
+        .values({ id: asset, indexes: [index] })
+        .onConflictDoUpdate((r) => ({ indexes: r.indexes.includes(index) ? r.indexes : [...r.indexes, index] }));
+    }
+  }
+  // the scheduled basket was applied (poke after its notice); a drop or an immediate rebalance emits RebalanceCancelled
+  const scheduled = ix.pending != null && event.args.reason === ix.pending.reason && event.block.timestamp >= BigInt(ix.pending.at);
+  await db
+    .update(schema.indexes, { id: index })
+    .set({ assets, supply: DATA_SUPPLY, version: event.args.version, targetBps: [...event.args.weightsBps], ...(scheduled ? { pending: null } : {}) });
+  if (event.args.version > 1) {
+    await db.insert(schema.versions).values({
+      id: `${index}:${event.args.version}`,
+      index,
+      version: event.args.version,
+      targetBps: [...event.args.weightsBps],
+      reason: event.args.reason,
+      startAt: event.block.timestamp,
+      ts: event.block.timestamp,
+    });
+    await db.insert(schema.indexEvents).values({
+      id: eventId(context.chain.id, event),
+      index,
+      kind: "version",
+      data: { version: event.args.version, assets, weights: [...event.args.weightsBps], reason: event.args.reason, level: event.args.level.toString() },
+      ts: event.block.timestamp,
+      block: event.block.number,
+      txHash: event.transaction.hash,
+    });
+  }
+  await refreshLevel(db, index, event.block.number, event.block.timestamp);
+});
+
+ponder.on("IndexRegistry:ModeSet", async ({ event, context }) => {
+  await context.db
+    .update(schema.indexes, { id: lower(event.args.index) })
+    .set({ mode: event.args.mode, driftBps: event.args.driftBps, intervalSec: event.args.intervalSec });
+});
+
+ponder.on("IndexRegistry:RebalanceScheduled", async ({ event, context }) => {
+  const index = lower(event.args.index);
+  const pending = { assets: event.args.assets.map(lower), weightsBps: [...event.args.weightsBps], reason: event.args.reason, at: event.args.at.toString() };
+  await context.db.update(schema.indexes, { id: index }).set({ pending });
+  await context.db.insert(schema.indexEvents).values({
+    id: eventId(context.chain.id, event),
+    index,
+    kind: "scheduled",
+    data: pending,
+    ts: event.block.timestamp,
+    block: event.block.number,
+    txHash: event.transaction.hash,
+  });
+});
+
+ponder.on("IndexRegistry:RebalanceCancelled", async ({ event, context }) => {
+  const index = lower(event.args.index);
+  await context.db.update(schema.indexes, { id: index }).set({ pending: null });
+  await context.db.insert(schema.indexEvents).values({
+    id: eventId(context.chain.id, event),
+    index,
+    kind: "cancelled",
+    ts: event.block.timestamp,
+    block: event.block.number,
+    txHash: event.transaction.hash,
+  });
+});
+
+ponder.on("IndexRegistry:VisibilityChanged", async ({ event, context }) => {
   const index = lower(event.args.index);
   await context.db.update(schema.indexes, { id: index }).set({ isPublic: event.args.isPublic });
   await context.db.insert(schema.indexEvents).values({

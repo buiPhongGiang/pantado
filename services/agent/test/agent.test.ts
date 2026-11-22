@@ -59,9 +59,12 @@ describe("tools (recorded API fixtures)", () => {
     const out = await runTool(buildTools(), "get_presets", { assets: ["nvda"], preset: "equal" }, ctx());
     expect(out.isError).toBe(true);
   });
-  it("explain uses protocol numbers", async () => {
-    const out = await runTool(buildTools(), "explain", { topic: "fees" }, ctx());
-    expect(JSON.stringify(out.result)).toContain("0.50 %");
+  it("explain uses protocol numbers; no trading or fee topic is left", async () => {
+    const tools = buildTools();
+    const out = await runTool(tools, "explain", { topic: "costs" }, ctx());
+    expect(JSON.stringify(out.result)).toContain("network fee");
+    expect((await runTool(tools, "explain", { topic: "fees" }, ctx())).isError).toBe(true);
+    expect(tools.map((t) => t.spec.name)).not.toContain("get_quote");
   });
 });
 
@@ -160,9 +163,9 @@ describe("server", () => {
   it("stored history drops completed answers' reasoning blocks (their signatures bind to a prefix that trimming changes); a tool loop keeps them", async () => {
     const thinking = { type: "opaque" as const, provider: "anthropic", raw: { type: "thinking", thinking: "", signature: "sig" } };
     const llm = new ScriptedProvider([
-      { stop: "tool_use", content: [thinking, { type: "tool_call", id: "t1", name: "explain", input: { topic: "fees" } }] },
+      { stop: "tool_use", content: [thinking, { type: "tool_call", id: "t1", name: "explain", input: { topic: "costs" } }] },
       { stop: "end", content: [thinking, { type: "text", text: "0.5 %" }] },
-      { stop: "end", content: [{ type: "text", text: "What does redeem cost?\nHow are creator fees split?\nWhat does a swap cost?" }] }, // follow-ups
+      { stop: "end", content: [{ type: "text", text: "How is the level computed?\nWhat triggers an Auto rebalance?\nCan I change the basket later?" }] }, // follow-ups
       { stop: "end", content: [{ type: "text", text: "ok" }] },
     ]);
     const sessions = memorySessions();

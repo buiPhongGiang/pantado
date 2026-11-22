@@ -50,6 +50,9 @@ function useAssessment(id: string): Assessment | null {
   return a;
 }
 
+/** The app has no buy / sell of index tokens (owner); creating an index (with its first buy) stays. */
+const NO_TRADING = true;
+
 export default function IndexPage({ id }: { id: string }) {
   const valid = isAddress(id);
   const base = valid ? `/indexes/${id}` : null;
@@ -91,7 +94,8 @@ export default function IndexPage({ id }: { id: string }) {
   const amountBase = useMemo(() => toBase(amt, side === "Buy" ? USDC_DECIMALS : UNIT_DECIMALS), [amt, side]);
 
   const fetchQuote = useCallback(async (): Promise<Quote | null> => {
-    if (!valid || amountBase === null) return null;
+    // no trading (owner): the buy / sell card is not shown, so no basket quote is fetched
+    if (NO_TRADING || !valid || amountBase === null) return null;
     try {
       const q = await apiPost<Quote>("/quote/basket", { index: id, side: side === "Buy" ? "buy" : "sell", amount: amountBase.toString() });
       setQuote(q);
@@ -159,13 +163,15 @@ export default function IndexPage({ id }: { id: string }) {
 
   const makePublic = useCallback(() => {
     if (!contracts || !valid) return;
-    void pubTx.run([tx.makePublic(contracts.factory, id as Address)]).then((h) => {
+    // data index (B101): visibility lives on the IndexRegistry
+    const req = detail.data?.model === "data" && contracts.indexRegistry ? tx.makeIndexPublic(contracts.indexRegistry, id as Address) : tx.makePublic(contracts.factory, id as Address);
+    void pubTx.run([req]).then((h) => {
       if (h) {
         setMadePublic(true);
         detail.reload();
       }
     });
-  }, [contracts, valid, pubTx, id, detail]);
+  }, [contracts, valid, pubTx, id, detail, detail.data]);
 
   const input = {
     detail: detail.data,

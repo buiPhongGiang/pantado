@@ -3,6 +3,7 @@
 "use client";
 import { Fragment, type ReactNode } from "react";
 import { A, P, bool, child, css, H, HI, interp, list, lookup, T, type LinkTarget, type Scope } from "../../lib/tpl";
+import { commonSlots } from "../../lib/common-slots";
 
 export const title = "Trade";
 
@@ -15,7 +16,7 @@ export function AssetScreen({
   nav: (target: LinkTarget, scope: Scope) => string;
   slots?: Record<string, (scope: Scope) => ReactNode>;
 }) {
-  const slot = (name: string, s: Scope): ReactNode => slots[name]?.(s) ?? null;
+  const slot = (name: string, s: Scope): ReactNode => (slots[name] ?? commonSlots[name])?.(s) ?? null;
   void A; void P; void HI; void H; void child; void list; void bool; void interp; void T;
   return (
     <div style={css("min-height: 100%; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch")}>
@@ -34,14 +35,7 @@ export function AssetScreen({
           </span>
           {"Ask"}
         </a>
-        <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Swap", v)}>
-          <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <path d="M4 8h13l-3.5-3.5M18 14H5l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          {"Swap"}
-        </a>
+        {slot("navNetwork", v)}
         <a aria-current="page" style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #F2F2F3")} href={nav("Marketplace", v)}>
           <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: #221637; color: #B18CFB")}>
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
@@ -256,7 +250,7 @@ export function AssetScreen({
               </div>
               <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 12px; padding: 10px; text-align: center")}>
                 <div style={css("font-size: 11px; color: #8E8E96; letter-spacing: 0.04em; text-transform: uppercase")}>
-                  {"Max trade"}
+                  {T(lookup("capLabel", v))}
                 </div>
                 <div style={css("margin-top: 4px; font-size: 15px; font-weight: 600; color: #F2F2F3")}>
                   {T(lookup("capS", v))}
@@ -264,93 +258,7 @@ export function AssetScreen({
               </div>
             </div>
             {slot("perf", v)}
-            <div style={css("background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px")}>
-              <div role="group" aria-label="Side" style={css("display: grid; grid-template-columns: 1fr 1fr; background: #131316; border-radius: 12px; padding: 4px")}>
-                {list(lookup("sides", v)).map((it, i) => { const s3 = child(v, "sd", it, i); return (
-                  <Fragment key={i}>
-                  <button type="button" onClick={H(lookup("sd.pick", s3))} style={css(interp("min-height: 44px; background: {{sd.bg}}; color: {{sd.fg}}; border: 0; border-radius: 9px; font-size: 14px; font-weight: 600", s3))} {...P({ "aria-pressed": A(lookup("sd.on", s3)) })}>
-                    {T(lookup("sd.label", s3))}
-                  </button>
-                  </Fragment>); })}
-              </div>
-              <div style={css("background: #131316; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px")}>
-                <label htmlFor="pay" style={css("font-size: 13px; color: #8E8E96")}>
-                  {"You pay"}
-                </label>
-                <div style={css("display: flex; align-items: center; gap: 10px")}>
-                  <input id="pay" type="number" min="0" step="any" value={T(lookup("amt", v))} onChange={HI(lookup("onAmt", v))} style={css("flex: 1 1 auto; min-width: 0; height: 44px; background: transparent; border: 0; color: #F2F2F3; font-family: 'Inter Tight', sans-serif; font-size: 24px; font-weight: 600")} />
-                  <span style={css("flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 6px; background: #1F1F23; border-radius: 999px; font-weight: 600; font-size: 14px")}>
-                    <span style={css(interp("width: 22px; height: 22px; border-radius: 50%; background: {{pay.avBg|pay.dot}}; display: inline-flex; align-items: center; justify-content: center; flex: none; color: #FFFFFF; letter-spacing: -0.02em; font-size: 10px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.45)", v))} aria-hidden="true">
-                      {T(lookup("pay.ini2", v))}
-                    </span>
-                    {T(lookup("pay.sym", v))}
-                  </span>
-                </div>
-              </div>
-              <div style={css("background: #131316; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px")}>
-                <span style={css("font-size: 13px; color: #8E8E96")}>
-                  {"You receive"}
-                </span>
-                <div style={css("display: flex; align-items: center; gap: 10px")}>
-                  <span style={css("flex: 1 1 auto; min-width: 0; font-family: 'Inter Tight', sans-serif; font-size: 24px; font-weight: 600; line-height: 44px; overflow: hidden; text-overflow: ellipsis")}>
-                    {T(lookup("recv", v))}
-                  </span>
-                  <span style={css("flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 6px; background: #1F1F23; border-radius: 999px; font-weight: 600; font-size: 14px")}>
-                    <span style={css(interp("width: 22px; height: 22px; border-radius: 50%; background: {{get.avBg|get.dot}}; display: inline-flex; align-items: center; justify-content: center; flex: none; color: #FFFFFF; letter-spacing: -0.02em; font-size: 10px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.45)", v))} aria-hidden="true">
-                      {T(lookup("get.ini2", v))}
-                    </span>
-                    {T(lookup("get.sym", v))}
-                  </span>
-                </div>
-              </div>
-              <dl style={css("margin: 0; padding: 0 2px; display: flex; flex-direction: column; gap: 8px; font-size: 13px")}>
-                {slot("routeRow", v)}
-                <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                  <dt style={css("color: #8E8E96")}>
-                    {"Fee 0.10%"}
-                  </dt>
-                  <dd style={css("margin: 0")}>
-                    {T(lookup("fee", v))}
-                  </dd>
-                </div>
-                <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                  <dt style={css("color: #8E8E96")}>
-                    {"Spread"}
-                  </dt>
-                  <dd style={css("margin: 0")}>
-                    {T(lookup("spreadS", v))}
-                  </dd>
-                </div>
-                <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                  <dt style={css("color: #8E8E96")}>
-                    {"Price impact"}
-                  </dt>
-                  <dd style={css("margin: 0")}>
-                    {"None"}
-                  </dd>
-                </div>
-                <div style={css("display: flex; justify-content: space-between; gap: 12px")}>
-                  <dt style={css("color: #8E8E96")}>
-                    {"Largest trade"}
-                  </dt>
-                  <dd style={css("margin: 0")}>
-                    {T(lookup("capS", v))}
-                  </dd>
-                </div>
-              </dl>
-              {bool(lookup("over", v)) && (
-                <>
-                {slot("notices", v)}
-                </>)}
-              <button type="button" onClick={H(lookup("swap", v))} style={css(interp("min-height: 52px; background: {{cta.bg}}; color: {{cta.fg}}; border: 0; border-radius: 12px; font-weight: 700; font-size: 16px", v))}>
-                {T(lookup("cta.label", v))}
-              </button>
-              {slot("settleNote", v)}
-              {bool(lookup("done", v)) && (
-                <>
-                {slot("status", v)}
-                </>)}
-            </div>
+            {slot("tradeCard", v)}
             {slot("inIndexes", v)}
           </aside>
         </div>

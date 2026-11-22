@@ -99,14 +99,15 @@ describe("gen-config", () => {
     const total = w.avalanche.tokens.length + w.avalanche.pending.length;
     expect(total).toBe(36); // 35 tokens + USDC
     expect(w.avalanche.pending).toEqual([]); // every token address is confirmed
-    expect(w.robinhood.stocks.length + w.robinhood.pending.length).toBe(25);
+    expect(w.robinhood.stocks.length + w.robinhood.pending.length).toBe(25); // US stocks; Vietnamese stocks have no data-chain whitelist
     expect(w.execution.find((e) => e.id === "nvda")?.symbol).toBe("pNVDA");
   });
 
-  it("app list shows WAVAX as AVAX and stocks with the reference badge", () => {
+  it("app list shows WAVAX as AVAX and stocks with their reference badge", () => {
     const f = appAssetsFileSchema.parse(parse(OUTPUT.appAssets));
     expect(f.assets.find((a) => a.id === "wavax")?.displaySymbol).toBe("AVAX");
     for (const a of f.assets.filter((x) => x.kind === "stock"))
-      expect(a.badge).toBe("Reference market: Robinhood Chain (on-chain)");
+      expect(a.badge).toBe(a.displayChain === "hose" ? "Reference market: HOSE (off-chain)" : "Reference market: Robinhood Chain (on-chain)");
+    expect(f.assets.filter((x) => x.displayChain === "hose")).toHaveLength(25);
   });
 });

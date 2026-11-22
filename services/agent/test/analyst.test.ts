@@ -120,20 +120,6 @@ describe("new tools", () => {
     expect(c.api.calls).toEqual(["/portfolio/0x70997970c51812dc3a010c7d01b50e0d17dc79c8"]);
   });
 
-  it("get_quote converts human amounts both ways and shows the asset card (no transaction)", async () => {
-    const c = ctx();
-    const r = await runTool(tools, "get_quote", { kind: "swap", from: "USDC", to: "BTC.b", amount: "100" }, c);
-    expect(r.isError).toBe(false);
-    expect(r.result).toMatchObject({ network: "Fuji testnet", pay: "100 USDC", receive: "0.00154321 BTC.b", minReceive: "0.00153549 BTC.b", feeUsdc: "0.1" });
-    expect(r.card?.kind).toBe("asset");
-    const post = c.api.calls.find((p) => p.startsWith("/quote/swap"));
-    expect(post && JSON.parse(post.slice("/quote/swap ".length))).toEqual({
-      tokenIn: "0x00000000000000000000000000000000000000a1",
-      tokenOut: "0x00000000000000000000000000000000000000b2",
-      amountIn: "100000000",
-    });
-  });
-
   it("wallet comes only from a wallet session id", () => {
     expect(walletOf("wallet:0x70997970C51812dc3A010C7d01b50e0d17dc79C8:3f1c2d4e-0000-4000-8000-000000000000")).toBe("0x70997970c51812dc3a010c7d01b50e0d17dc79c8");
     expect(walletOf("anon:abc:123")).toBeNull();
@@ -143,8 +129,8 @@ describe("new tools", () => {
 describe("harness report", () => {
   it("collects tools, tokens and unverified figures; tells the model today's date", async () => {
     const llm = new ScriptedProvider([
-      { stop: "tool_use", content: [{ type: "tool_call", id: "t1", name: "explain", input: { topic: "fees" } }], usage: { input: 100, output: 10, cacheRead: 0, cacheWrite: 50 } },
-      { stop: "end", content: [{ type: "text", text: "Buying costs 0.50 %; creating costs 5 USDC; NVDA will hit $400." }], usage: { input: 200, output: 20, cacheRead: 50, cacheWrite: 0 } },
+      { stop: "tool_use", content: [{ type: "tool_call", id: "t1", name: "explain", input: { topic: "costs" } }], usage: { input: 100, output: 10, cacheRead: 0, cacheWrite: 50 } },
+      { stop: "end", content: [{ type: "text", text: "Creating costs only the network fee, up to 20 public indexes per wallet; NVDA will hit $400." }], usage: { input: 200, output: 20, cacheRead: 50, cacheWrite: 0 } },
     ]);
     let rep: AskReport | null = null;
     const assets = loadAssets();
@@ -153,7 +139,7 @@ describe("harness report", () => {
       { autoModel: "a", deepModel: "d", autoMaxSteps: 4, deepMaxSteps: 12 },
       { api: fakeApi({}), assets, limits: { minAssets: 2, maxAssets: 20, minWeightPct: 1, driftMinPct: 10, driftMaxPct: 200 } },
       [],
-      "what are the fees?",
+      "what does it cost to create an index?",
       "auto",
       { meta: () => undefined, token: () => undefined, card: () => undefined, report: (r) => (rep = r) },
     );

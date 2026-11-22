@@ -7,6 +7,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {AssetRegistry} from "../src/core/AssetRegistry.sol";
 import {IndexFactory} from "../src/core/IndexFactory.sol";
 import {IndexLens} from "../src/core/IndexLens.sol";
+import {IndexRegistry} from "../src/core/IndexRegistry.sol";
 import {IndexVault} from "../src/core/IndexVault.sol";
 import {FeeSplitter} from "../src/fees/FeeSplitter.sol";
 import {FixedPoint} from "../src/libraries/FixedPoint.sol";
@@ -54,6 +55,7 @@ contract Deploy is Script {
     IndexVault internal vaultImpl;
     Rebalancer internal rebalancer;
     IndexLens internal lens;
+    IndexRegistry internal indexRegistry;
     SwapRouter internal router;
 
     string[] internal assetIds;
@@ -143,6 +145,24 @@ contract Deploy is Script {
         rebalancer = new Rebalancer(address(factory), address(oracle), _rebalancerParams());
         factory.setRebalancer(address(rebalancer));
         lens = new IndexLens();
+        indexRegistry = new IndexRegistry(
+            deployer,
+            address(registry),
+            address(oracle),
+            _u(".vault.startLevelUsd") * 1e18,
+            IndexRegistry.Limits({
+                minAssets: uint8(_u(".factory.minAssets")),
+                maxAssets: uint8(_u(".factory.maxAssets")),
+                minWeightBps: uint16(_u(".factory.minWeightBps")),
+                maxPublicPerCreator: uint16(_u(".registry.maxPublicPerCreator")),
+                minRebalanceSec: uint64(_u(demo ? ".demoOverrides.minRebalanceSec" : ".registry.minRebalanceSec")),
+                driftMinBps: uint32(_u(".rebalancer.driftMinBps")),
+                driftMaxBps: uint32(_u(".rebalancer.driftMaxBps")),
+                minIntervalSec: uint64(_u(demo ? ".demoOverrides.minRebalanceSec" : ".registry.minIntervalSec")),
+                maxNoticeSec: uint64(_u(".registry.maxNoticeSec")),
+                dropStaleSec: uint64(_u(".registry.dropStaleSec"))
+            })
+        );
         router = new SwapRouter(deployer, address(registry), treasury, uint16(_u(".swapRouter.swapFeeBps")));
     }
 
@@ -242,6 +262,7 @@ contract Deploy is Script {
         vm.serializeAddress(c, "vaultImplementation", address(vaultImpl));
         vm.serializeAddress(c, "rebalancer", address(rebalancer));
         vm.serializeAddress(c, "lens", address(lens));
+        vm.serializeAddress(c, "indexRegistry", address(indexRegistry));
         string memory contractsJson = vm.serializeAddress(c, "swapRouter", address(router));
 
         string memory a = "assets";

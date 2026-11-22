@@ -1,6 +1,6 @@
-import VersionPage from "../../../src/screens/version";
+import VersionView from "../../../src/ui/version-view";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <VersionPage id={id} />;
+  return <VersionView id={id} />;
 }

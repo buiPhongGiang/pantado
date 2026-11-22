@@ -196,6 +196,7 @@ for (let m = re.exec(html); m; m = re.exec(html)) {
 "use client";
 import { Fragment, type ReactNode } from "react";
 import { A, P, bool, child, css, H, HI, interp, list, lookup, T, type LinkTarget, type Scope } from "../../lib/tpl";
+import { commonSlots } from "../../lib/common-slots";
 
 export const title = ${jsStr(title)};
 
@@ -208,7 +209,7 @@ export function ${name}Screen({
   nav: (target: LinkTarget, scope: Scope) => string;
   slots?: Record<string, (scope: Scope) => ReactNode>;
 }) {
-  const slot = (name: string, s: Scope): ReactNode => slots[name]?.(s) ?? null;
+  const slot = (name: string, s: Scope): ReactNode => (slots[name] ?? commonSlots[name])?.(s) ?? null;
   void A; void P; void HI; void H; void child; void list; void bool; void interp; void T;
   return (
 ${body}

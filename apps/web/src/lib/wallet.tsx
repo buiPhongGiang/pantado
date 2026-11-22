@@ -61,7 +61,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         });
         return;
       }
-      const m = method ?? (eth() ? "injected" : devAccount ? "dev" : "injected");
+      // local Anvil: always the funded dev wallet; a browser wallet is on another chain with no test gas there
+      const m = devAccount ? "dev" : (method ?? "injected");
       if (m === "dev" && devAccount) {
         setAddress(devAccount.address);
         setKind("dev");

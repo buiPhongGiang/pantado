@@ -14,7 +14,7 @@ export const ROUTES: Record<LinkTarget, string> = {
   Review: "/create",
   Redeem: "/portfolio",
   Version: "/portfolio",
-  Swap: "/swap",
+  Swap: "/marketplace", // no swap page (owner): any leftover link opens the Marketplace
   IndexPrivate: "/portfolio",
   States: "/states",
 };

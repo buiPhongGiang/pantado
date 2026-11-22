@@ -10,4 +10,6 @@ export const binding: Binding = {
     // network badge: "Fuji testnet", or "Local test chain" on the dev stack (never Fuji for a local chain)
     "Fuji testnet": "me.netBadge",
   },
+  // no single-asset swap or trading in the app (owner): the Swap rail item becomes the Network entry (lib/common-slots)
+  slots: [{ tag: "a", attrs: { href: "Swap.dc.html" }, name: "navNetwork" }],
 };

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workspace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#060607}
+a{color:#F2F2F3;text-decoration:none}a:hover{color:#B18CFB}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #B18CFB;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+<div style="max-width: 1420px; margin: 0 auto; background: #0B0B0D; border: 1px solid #1A1A1D; border-radius: 18px; overflow: hidden">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 14px 16px; border-bottom: 1px solid #17171A">
+    <a href="Main.dc.html" aria-label="Pantado home" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #17171A; border: 1px solid #1F1F23; display: grid; place-items: center">
+        <svg width="24" height="18" viewBox="10 14 324 241" aria-hidden="true"><path d="M94 16H238C291 16 331 60 331 113C331 166 291 206 240 206H213L219 200C247 195 267 176 267 153C267 126 247 104 221 104H94Z" fill="#F4F2FA"></path><path d="M137 146V252H12V214C12 176 42 146 80 146Z" fill="#9052F9"></path></svg>
+      </span>
+      <img src="/_blob/33071f8508580726c9aadb20187ee8f4" alt="pantado" style="height: 22px; width: auto">
+    </a>
+    <nav aria-label="Main" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <a href="Main.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Market</a>
+      <a href="Create.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Create</a>
+      <a href="Workspace.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 12px; background: #1C1C20; color: #F2F2F3; font-weight: 600; font-size: 15px">Workspace</a>
+      <a href="Network.dc.html" style="padding: 10px 16px; border-radius: 12px; color: #8E8E96; font-weight: 600; font-size: 15px">Network</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #E84142"></span>Avalanche
+        <span style="padding: 3px 8px; border-radius: 6px; background: #2E2311; color: #F5B14C; font-size: 12px; font-weight: 600">Fuji testnet</span>
+      </span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 8px; border-radius: 12px; background: #131316; font-weight: 600; font-size: 14px">
+        <span style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(90deg, #F2F2F3 50%, #9052F9 50%)"></span>0x4b2e…91d0
+      </span>
+    </div>
+  </header>
+
+  <div style="padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <h1 style="margin: 0; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -0.05em">Workspace</h1>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <div role="group" aria-label="Indexes" style="display: flex; gap: 6px">
+          <sc-for list="{{ scopes }}" as="c" hint-placeholder-count="3">
+            <button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.pick }}" style="border: 0; height: 44px; padding: 0 16px; border-radius: 12px; font-weight: 600; font-size: 15px; background: {{ c.bg }}; color: {{ c.fg }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+        <div role="group" aria-label="Period" style="display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: #17171A">
+          <sc-for list="{{ ranges }}" as="r" hint-placeholder-count="3">
+            <button type="button" aria-pressed="{{ r.on }}" onClick="{{ r.pick }}" style="border: 0; padding: 9px 14px; border-radius: 9px; font-weight: 600; font-size: 14px; background: {{ r.bg }}; color: {{ r.fg }}">{{ r.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+      <div style="padding: 18px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">BEST · {{ rl }}</div><div style="margin-top: 8px; font-weight: 700; font-size: 17px">{{ best.n }}</div><div style="margin-top: 4px; font-weight: 600; color: {{ best.c }}">{{ best.r }}</div></div>
+      <div style="padding: 18px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">WORST · {{ rl }}</div><div style="margin-top: 8px; font-weight: 700; font-size: 17px">{{ worst.n }}</div><div style="margin-top: 4px; font-weight: 600; color: {{ worst.c }}">{{ worst.r }}</div></div>
+      <div style="padding: 18px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">AVAX BENCHMARK · {{ rl }}</div><div style="margin-top: 8px; font-weight: 700; font-size: 17px">{{ beatN }} of {{ count }} beat AVAX</div><div style="margin-top: 4px; font-weight: 600; color: {{ bench.c }}">AVAX {{ bench.r }}</div></div>
+      <div style="padding: 18px; border-radius: 14px; background: #0E0E10; border: 1px solid #1C1C20"><div style="font-size: 12px; letter-spacing: .06em; color: #8E8E96">NEEDS ATTENTION</div><div style="margin-top: 8px; font-weight: 700; font-size: 17px">{{ attn }} indexes</div><div style="margin-top: 4px; font-weight: 600; color: #F5B14C">Drift near trigger or rebalance due</div></div>
+    </div>
+
+    <div style="border-radius: 16px; background: #0E0E10; border: 1px solid #1C1C20; padding: 18px 20px 14px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700">Level, rebased to 100 at period start</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="4">
+            <button type="button" aria-pressed="{{ l.on }}" onClick="{{ l.pick }}" style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid #26262B; font-weight: 600; font-size: 13px; background: {{ l.bg }}; color: {{ l.fg }}"><span style="width: 10px; height: 3px; border-radius: 2px; background: {{ l.col }}"></span>{{ l.t }}</button>
+          </sc-for>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; font-size: 13px; color: #8E8E96"><span style="width: 12px; border-top: 2px dashed #8E8E96"></span>AVAX</span>
+        </div>
+      </div>
+      <div style="display: flex">
+        <div style="flex: 1; min-width: 0; position: relative; height: 320px">
+          <sc-for list="{{ ticks }}" as="g" hint-placeholder-count="5">
+            <div style="position: absolute; left: 0; right: 0; top: {{ g.top }}; border-top: 1px solid {{ g.line }}"></div>
+          </sc-for>
+          <sc-for list="{{ lines }}" as="s" hint-placeholder-count="4">
+            <div style="position: absolute; inset: 0">
+              <svg viewBox="0 0 1000 300" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block" aria-hidden="true"><polyline points="{{ s.pts }}" fill="none" stroke="{{ s.col }}" stroke-width="{{ s.sw }}" stroke-dasharray="{{ s.dash }}" vector-effect="non-scaling-stroke"></polyline></svg>
+            </div>
+          </sc-for>
+        </div>
+        <div style="width: 64px; flex: none; position: relative; height: 320px; font-size: 11px; color: #8E8E96">
+          <sc-for list="{{ ticks }}" as="g" hint-placeholder-count="5">
+            <span style="position: absolute; left: 10px; top: {{ g.ltop }}">{{ g.v }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-right: 64px; font-size: 11px; color: #8E8E96"><span>{{ from }}</span><span>Nov 22</span></div>
+    </div>
+
+    <div style="overflow-x: auto; border-radius: 16px; border: 1px solid #1C1C20; background: #0E0E10">
+      <table style="width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 14px">
+        <thead><tr style="color: #8E8E96; font-size: 11px; letter-spacing: .08em; text-align: right">
+          <th style="text-align: left; padding: 14px 20px; font-weight: 500">INDEX</th>
+          <th style="padding: 14px 8px; font-weight: 500">LEVEL</th>
+          <th style="padding: 14px 8px; font-weight: 500">RETURN · {{ rl }}</th>
+          <th style="padding: 14px 8px; font-weight: 500">VS AVAX</th>
+          <th style="padding: 14px 8px; font-weight: 500">VOLATILITY</th>
+          <th style="padding: 14px 8px; font-weight: 500">MAX DRAWDOWN</th>
+          <th style="padding: 14px 8px; font-weight: 500">SINCE LAUNCH</th>
+          <th style="text-align: left; padding: 14px 8px 14px 28px; font-weight: 500">REBALANCE</th>
+          <th style="padding: 14px 20px"><span style="position: absolute; left: -9999px">Open</span></th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+            <tr style="border-top: 1px solid #17171A; text-align: right">
+              <td style="text-align: left; padding: 14px 20px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 4px; height: 30px; border-radius: 2px; background: {{ r.col }}"></span><div><div style="font-weight: 700; font-size: 15px">{{ r.n }}</div><div style="font-size: 12px; color: #8E8E96">{{ r.t }} · {{ r.mode }}</div></div></div></td>
+              <td style="padding: 14px 8px; font-weight: 700">{{ r.lv }}</td>
+              <td style="padding: 14px 8px; font-weight: 600; color: {{ r.rc }}">{{ r.ret }}</td>
+              <td style="padding: 14px 8px; color: {{ r.xc }}">{{ r.vs }}</td>
+              <td style="padding: 14px 8px">{{ r.vol }}</td>
+              <td style="padding: 14px 8px; color: #FF6B6B">{{ r.dd }}</td>
+              <td style="padding: 14px 8px; color: {{ r.sc }}">{{ r.since }}</td>
+              <td style="text-align: left; padding: 14px 8px 14px 28px"><span style="padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; background: {{ r.sbg }}; color: {{ r.sfg }}">{{ r.st }}</span></td>
+              <td style="padding: 10px 20px"><a href="Index.dc.html" style="display: inline-block; padding: 10px 14px; border-radius: 10px; background: #1C1C20; font-weight: 700; font-size: 14px">Open</a></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div aria-hidden="true" style="height: 92px"></div>
+<dc-import name="AskWidget" start-open="{{ no }}" hint-size="60px,60px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1340}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { scope: 'Your indexes', range: 90, hidden: {} }; }
+  series(seed, end, r90, vol) {
+    let h = seed;
+    const rnd = () => { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
+    const start = end / (1 + r90);
+    const w = [0];
+    for (let i = 1; i <= 90; i++) w.push(w[i - 1] + (rnd() - 0.5) * vol * start);
+    return w.map((x, i) => start + x + (end - start - w[90]) * i / 90);
+  }
+  renderVals() {
+    const s = this.state;
+    const ALL = [
+      ['Tech + BTC Balanced', 'TBB', 'Manual', 107.02, 0.071, 0.030, 'Version 4 in 18h', '#2E2311', '#F5B14C', '#9052F9', ['Your indexes']],
+      ['Vietnam Tech + AI', 'VNAI', 'Manual', 109.12, 0.064, 0.026, 'On target', '#11261B', '#3DD68C', '#F2F2F3', ['Your indexes']],
+      ['My basket', 'MYBK', 'Auto', 98.40, -0.022, 0.034, 'Drift 6.2% · plan queued', '#2E2311', '#F5B14C', '#F5B14C', ['Your indexes']],
+      ['AI Chips', 'CHIP', 'Auto', 128.41, 0.182, 0.040, 'On target', '#11261B', '#3DD68C', '#3DD68C', ['Watchlist']],
+      ['Avalanche Blue Chips', 'AVBLU', 'Auto', 121.40, 0.096, 0.052, 'On target', '#11261B', '#3DD68C', '#4C8DFF', ['Watchlist']],
+      ['Digital Gold Hedge', 'HEDGE', 'Auto', 104.66, 0.031, 0.012, 'Rebalanced Oct 02', '#221637', '#B18CFB', '#D4AF37', ['Watchlist']],
+      ['Magnificent 7', 'MAG7', 'Auto', 111.73, 0.058, 0.024, 'On target', '#11261B', '#3DD68C', '#FF8FA3', []],
+      ['Avalanche DEX Index', 'AVDEX', 'Auto', 94.12, -0.083, 0.060, 'Drift 4.9%', '#2E2311', '#F5B14C', '#2FC7C0', []]
+    ];
+    const list = ALL.filter((d) => s.scope === 'All public' || d[10].indexOf(s.scope) >= 0);
+    const n = s.range;
+    const avax = this.series(97, 100, -0.021, 0.07).slice(-(n + 1));
+    const stat = (arr) => {
+      const r = arr[arr.length - 1] / arr[0] - 1;
+      const rets = []; for (let i = 1; i < arr.length; i++) rets.push(arr[i] / arr[i - 1] - 1);
+      const m = rets.reduce((a, b) => a + b, 0) / rets.length;
+      const sd = Math.sqrt(rets.reduce((a, b) => a + (b - m) * (b - m), 0) / rets.length);
+      let peak = arr[0], dd = 0; arr.forEach((v) => { peak = Math.max(peak, v); dd = Math.min(dd, v / peak - 1); });
+      return { r: r, vol: sd * Math.sqrt(365), dd: dd };
+    };
+    const pct = (v) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
+    const col = (v) => (v >= 0 ? '#3DD68C' : '#FF6B6B');
+    const aS = stat(avax);
+    const data = list.map((d, k) => {
+      const full = this.series(31 + k * 977 + d[1].length * 13, d[3], d[4], d[5]);
+      const sl = full.slice(-(n + 1));
+      return { d: d, sl: sl, st: stat(sl) };
+    });
+    const visible = data.filter((x) => !s.hidden[x.d[1]]);
+    const reb = (arr) => arr.map((v) => v / arr[0] * 100);
+    const all = visible.map((x) => reb(x.sl)).concat([reb(avax)]);
+    let lo = Math.min.apply(null, all.map((a) => Math.min.apply(null, a)));
+    let hi = Math.max.apply(null, all.map((a) => Math.max.apply(null, a)));
+    const step = (hi - lo) > 30 ? 10 : 5;
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const Y = (v) => (hi - v) / (hi - lo) * 300;
+    const pts = (a) => a.map((v, i) => (i / (a.length - 1) * 1000).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
+    const lines = visible.map((x) => ({ pts: pts(reb(x.sl)), col: x.d[9], sw: 2, dash: '' })).concat([{ pts: pts(reb(avax)), col: '#8E8E96', sw: 1.5, dash: '5 5' }]);
+    const ticks = [];
+    for (let v = hi; v >= lo; v -= step) ticks.push({ v: String(v), top: (Y(v) / 300 * 100).toFixed(2) + '%', ltop: 'calc(' + (Y(v) / 300 * 100).toFixed(2) + '% - 7px)', line: v === 100 ? '#3A3A40' : '#17171A' });
+    const rows = data.map((x) => ({
+      n: x.d[0], t: x.d[1], mode: x.d[2], col: x.d[9], lv: x.d[3].toFixed(2),
+      ret: pct(x.st.r), rc: col(x.st.r), vs: (x.st.r - aS.r >= 0 ? '+' : '') + ((x.st.r - aS.r) * 100).toFixed(1) + ' pts', xc: col(x.st.r - aS.r),
+      vol: (x.st.vol * 100).toFixed(0) + '%', dd: (x.st.dd * 100).toFixed(1) + '%',
+      since: pct(x.d[3] / 100 - 1), sc: col(x.d[3] - 100),
+      st: x.d[6], sbg: x.d[7], sfg: x.d[8]
+    }));
+    const sorted = data.slice().sort((a, b) => b.st.r - a.st.r);
+    const pick = (x) => ({ n: x ? x.d[0] : '—', r: x ? pct(x.st.r) : '', c: x ? col(x.st.r) : '#8E8E96' });
+    const seg = (items, cur, key, onBg, offBg) => items.map((it) => {
+      const v = Array.isArray(it) ? it[0] : it, label = Array.isArray(it) ? it[1] : it;
+      return { label: label, on: v === cur ? 'true' : 'false', bg: v === cur ? onBg : offBg, fg: v === cur ? (onBg === '#F2F2F3' ? '#0B0B0D' : '#F2F2F3') : '#B4B4BB', pick: () => this.setState({ [key]: v }) };
+    });
+    const legend = data.map((x) => {
+      const off = !!s.hidden[x.d[1]];
+      return { t: x.d[1], col: x.d[9], on: off ? 'false' : 'true', bg: off ? 'transparent' : '#17171A', fg: off ? '#5A5A62' : '#F2F2F3', pick: () => this.setState({ hidden: Object.assign({}, s.hidden, { [x.d[1]]: !off }) }) };
+    });
+    const rl = n === 7 ? '7D' : n === 30 ? '30D' : '90D';
+    const from = n === 7 ? 'Nov 15' : n === 30 ? 'Oct 23' : 'Aug 24';
+    return {
+      scopes: seg(['Your indexes', 'Watchlist', 'All public'], s.scope, 'scope', '#F2F2F3', '#17171A'),
+      ranges: seg([[7, '7D'], [30, '30D'], [90, '90D']], s.range, 'range', '#2A2A2F', 'transparent'),
+      best: pick(sorted[0]), worst: pick(sorted[sorted.length - 1]),
+      bench: { r: pct(aS.r), c: col(aS.r) }, beatN: data.filter((x) => x.st.r > aS.r).length, count: data.length,
+      attn: data.filter((x) => x.d[7] === '#2E2311').length,
+      no: false, legend, lines, ticks, rows, rl, from
+    };
+  }
+}
+</script>
+</body>
+</html>

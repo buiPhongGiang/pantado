@@ -142,7 +142,47 @@ function tradeBlock(input: IndexInput, side: Side, name: string): TradeBlock {
   return { kind: "error", title: e.message, body: "" };
 }
 
+/**
+ * Data index (IndexRegistry): a scheduled basket, or the Auto trigger. Nothing is traded: the card says when the
+ * basket changes and why; anyone may apply it once due (the rebalance keeper does).
+ */
+function dataPlanVM(input: IndexInput, symOf: (a: string) => string): PlanVM | null {
+  const { detail, comp, now } = input;
+  const r = detail?.rebalance;
+  if (!detail || !r) return null;
+  if (r.pending) {
+    const basket = r.pending.assets.map((a, i) => `${symOf(a)} ${((r.pending?.weightsBps[i] ?? 0) / 100).toFixed(0)}%`).join(" · ");
+    const due = r.pending.at <= now;
+    return {
+      title: `Version ${detail.version + 1} · scheduled`,
+      sub: `${r.pending.reason ? `${r.pending.reason}. ` : ""}New basket: ${basket}. The level carries over; nothing is traded.`,
+      pill: due ? "Applying" : `Starts in ${until(r.pending.at, now)}`,
+      pillBg: "#2E2311",
+      pillFg: "#F5B14C",
+      guards: [],
+      lots: [],
+    };
+  }
+  if (r.mode !== MODE.Auto) return null;
+  const drift = Number(comp?.maxDriftBps ?? 0);
+  const next = r.rebalancedAt + r.intervalSec;
+  const pct = (bps: number): string => `${(bps / 100).toFixed(0)}%`;
+  return {
+    title: "Auto rebalance",
+    sub: `Back to target weights every ${Math.round(r.intervalSec / 86_400)} days, or sooner when an asset drifts ±${pct(r.driftBps)} from its target. Anyone can apply it; nothing is traded.`,
+    pill: r.due === "Auto" ? "Due now" : `By ${until(next, now)}`,
+    pillBg: r.due === "Auto" ? "#2E2311" : "#11261B",
+    pillFg: r.due === "Auto" ? "#F5B14C" : "#3DD68C",
+    guards: [
+      { label: "Largest drift", val: pct(drift), max: `/ ±${pct(r.driftBps)} trigger`, w: `${Math.min(100, (drift / Math.max(1, r.driftBps)) * 100).toFixed(0)}%`, col: "#9052F9" },
+      { label: "Time", val: until(next, now), max: "until the next one", w: `${Math.min(100, Math.max(0, ((now - r.rebalancedAt) / Math.max(1, r.intervalSec)) * 100)).toFixed(0)}%`, col: "#6FA8FF" },
+    ],
+    lots: [],
+  };
+}
+
 function planVM(input: IndexInput, symOf: (a: string) => string, pxOf: (a: string) => number | null): PlanVM | null {
+  if (input.detail?.model === "data") return dataPlanVM(input, symOf);
   const { detail, reb, now } = input;
   const plan = reb?.plans.find((p) => p.status === "Scheduled" || p.status === "Active");
   if (!detail || !plan) return null;
@@ -347,7 +387,8 @@ export function indexVM(input: IndexInput, st: IndexState, h: IndexHandlers) {
     creatorShort: detail ? short(detail.creator) : "—",
     badge: detail?.badge ?? input.levels?.badge ?? "",
     modeLabel: detail ? MODE_LABEL(detail.mode, detail.driftBps) : "—",
-    isManual: detail?.mode === MODE.Manual,
+    // a data index (IndexRegistry) is always rebalanced by its creator publishing new weights
+    isManual: detail?.mode === MODE.Manual || detail?.model === "data",
     levelS,
     holdersS: holdersN === null ? "—" : holdersN >= 200 ? "200+" : holdersN.toLocaleString("en-US"),
     boughtS: detail ? vol(fromBase(detail.volumeUsdc, USDC_DECIMALS)) : "—",

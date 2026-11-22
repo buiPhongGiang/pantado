@@ -1,11 +1,12 @@
 import { createPublicClient, fallback, http, type PublicClient } from "viem";
 import { createReader, executionChain } from "@pantado/sdk";
 import { createLogger, envInt, onShutdown, requireEnv } from "@pantado/service-kit";
-import { executionRpcs, loadAssets, loadDeployment, loadProfile, loadServices } from "@pantado/shared";
+import { executionRpcs, loadAssets, loadDeployment, loadPriceChain, loadProfile, loadServices } from "@pantado/shared";
 import { indexerClient, marketDataHistory, marketDataPrices, memoryCache, redisCache, type ApiDeps } from "./deps.js";
 import { privyKeys, privyVerifier } from "./privy.js";
 import { buildServer } from "./server.js";
 import { registerWs } from "./ws.js";
+import { PriceChainNetwork } from "./network.js";
 
 async function main(): Promise<void> {
   const log = createLogger("api");
@@ -20,6 +21,21 @@ async function main(): Promise<void> {
   const client = createPublicClient({ chain, transport: fallback(urls.map((u) => http(u, { batch: { batchSize: 25, wait: 10 } }))) }) as PublicClient;
   const cache = process.env.REDIS_URL ? await redisCache(process.env.REDIS_URL) : memoryCache();
   const services = loadServices();
+  // Pantado Price Chain (PRICECHAIN_NETWORK, e.g. "local"): the Network page reads both chains
+  let priceChain: PriceChainNetwork | null = null;
+  const pcNet = process.env.PRICECHAIN_NETWORK;
+  if (pcNet) {
+    const { cfg, deployment: pcDep } = loadPriceChain(pcNet);
+    const n = cfg.networks[pcNet];
+    const l1Rpc = n ? process.env[n.l1.rpcEnv] : undefined;
+    if (n && pcDep && l1Rpc) {
+      const assets = loadAssets().filter((a) => a.kind === "stock" && a.display.chain === "hose").map((a) => a.id);
+      priceChain = new PriceChainNetwork(
+        { name: n.l1.name, l1ChainId: n.l1.chainId, l1BlockchainId: n.l1.blockchainIdHex as `0x${string}`, l1Rpc, cchainChainId: n.cchain.chainId, cchainRpc: n.cchain.rpc, priceReports: pcDep.l1.priceReports, receiver: pcDep.cchain.receiver, icmMessenger: n.icmMessenger },
+        assets,
+      );
+    } else log.warn("price chain configured but not reachable (deployment or L1 RPC missing)", { network: pcNet });
+  }
   const deps: ApiDeps = {
     profile,
     services,
@@ -46,6 +62,7 @@ async function main(): Promise<void> {
               : null,
           }
         : null,
+    priceChain,
   };
   const app = buildServer(deps);
   const stopWs = await registerWs(app, deps);

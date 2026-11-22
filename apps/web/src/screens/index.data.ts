@@ -22,6 +22,17 @@ export interface IndexDetail {
   name: string;
   description: string;
   creator: string;
+  /** "data": defined on the IndexRegistry (no deposit, level from prices); "vault": legacy basket */
+  model?: "vault" | "data";
+  /** data index: rebalance mode, trigger, scheduled basket and what is due now (IndexRegistry) */
+  rebalance?: {
+    mode: number;
+    driftBps: number;
+    intervalSec: number;
+    rebalancedAt: number;
+    pending: { assets: string[]; weightsBps: number[]; reason: string; at: number } | null;
+    due: "None" | "Drop" | "Pending" | "Auto";
+  };
   isPublic: boolean;
   mode: number;
   driftBps: number;

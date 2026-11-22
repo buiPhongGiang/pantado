@@ -17,7 +17,7 @@ import { useTx, useWallet } from "../lib/wallet";
 import { VersionScreen, title } from "./gen/Version.gen";
 import type { AssetInfo, Composition, Holder, IndexDetail, Levels } from "./index.data";
 import { Alert, TxStatus, WrongNetwork } from "./index.parts";
-import { versionVM, type When } from "./version.vm";
+import { versionVM, WHEN_SEC, type When } from "./version.vm";
 
 export default function VersionPage({ id }: { id: string }) {
   const valid = isAddress(id);
@@ -33,6 +33,11 @@ export default function VersionPage({ id }: { id: string }) {
 
   const [weights, setWeights] = useState<Record<string, number>>({});
   const [when, setWhen] = useState<When>("48h");
+  const isData = detail.data?.model === "data";
+  // a data index defaults to "Now" (nobody holds it); a vault index keeps its notice choices
+  useEffect(() => {
+    if (isData) setWhen((w) => (w === "48h" ? "Now" : w));
+  }, [isData]);
   const [reason, setReason] = useState("");
   const [done, setDone] = useState(false);
   const [now, setNow] = useState<number>(() => Math.floor(Date.now() / 1000));
@@ -43,16 +48,21 @@ export default function VersionPage({ id }: { id: string }) {
 
   const contracts = CONFIG.deployment?.contracts ?? null;
   const schedule = useCallback(
-    (weightsBps: number[]) => {
+    (weightsBps: number[], basket: string[]) => {
       if (!contracts || !valid || publish.state.status === "pending") return;
-      void publish.run([tx.publishVersion(contracts.rebalancer, id as Address, weightsBps, reason.trim())]).then((h) => {
+      // data index (B101): new weights take effect at once on the IndexRegistry, the level carries over
+      const req =
+        detail.data?.model === "data" && contracts.indexRegistry
+          ? tx.rebalanceIndex(contracts.indexRegistry, id as Address, basket as Address[], weightsBps, reason.trim(), BigInt(WHEN_SEC[when]))
+          : tx.publishVersion(contracts.rebalancer, id as Address, weightsBps, reason.trim());
+      void publish.run([req]).then((h) => {
         if (h) {
           setDone(true);
           detail.reload();
         }
       });
     },
-    [contracts, valid, publish, id, reason, detail],
+    [contracts, valid, publish, id, reason, detail, detail.data, when],
   );
 
   const vm = versionVM(
@@ -84,6 +94,14 @@ export default function VersionPage({ id }: { id: string }) {
           onChange={(e) => setReason(e.target.value)}
           style={css("width: 100%; box-sizing: border-box; padding: 12px 14px; resize: none; background: #131316; border: 1px solid #26262B; border-radius: 12px; color: #F2F2F3; font-family: inherit; font-size: 15px; line-height: 1.5")}
         />
+        {isData ? (
+          <span style={css("font-size: 13px; color: #8E8E96")}>
+            {"Nothing is traded: the level carries over and follows the new weights. "}
+            <a href={`/create?edit=${id}`} style={css("color: #B18CFB; font-weight: 600")}>
+              {"Add or remove assets"}
+            </a>
+          </span>
+        ) : null}
         {error ? <Alert tone="error" title={error} /> : null}
         {w.address && !w.chainOk ? <WrongNetwork onSwitch={() => void w.switchChain()} /> : null}
         {publish.state.status !== "confirmed" ? (

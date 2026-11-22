@@ -138,7 +138,7 @@ describe("canonical", () => {
       now: () => 1234,
     });
     const r = await md.refresh();
-    expect(r.prices).toHaveLength(60); // 25 stocks + 35 tokens; USDC is fixed
+    expect(r.prices).toHaveLength(85); // 50 stocks (25 US, 25 Vietnamese) + 35 tokens; USDC is fixed
     expect(r.prices.every((p) => p.canonical.source === "seed" && p.canonical.ts === 1234)).toBe(true);
   });
   it("live mode with nothing confirmed prices nothing (no fabricated data)", async () => {

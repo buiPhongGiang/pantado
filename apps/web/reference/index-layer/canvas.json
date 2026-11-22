@@ -1,0 +1,124 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AskWidget.dc.html": {
+      "h": 760,
+      "is_interactive": true,
+      "title": "Ask PantadoAI · open",
+      "w": 480,
+      "x": 6080,
+      "y": 0
+    },
+    "Create.dc.html": {
+      "expand": "fill",
+      "h": 1707,
+      "is_interactive": true,
+      "title": "Create index",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Index.dc.html": {
+      "expand": "fill",
+      "h": 1258,
+      "is_interactive": true,
+      "title": "Index · TBB",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1917,
+      "is_interactive": true,
+      "title": "Market (home)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Network.dc.html": {
+      "expand": "fill",
+      "h": 1011,
+      "is_interactive": true,
+      "title": "Network · Price Chain",
+      "w": 1440,
+      "x": 4560,
+      "y": 1980
+    },
+    "Stock.dc.html": {
+      "expand": "fill",
+      "h": 1517,
+      "is_interactive": true,
+      "title": "Stock · NVDA",
+      "w": 1440,
+      "x": 1520,
+      "y": 1980
+    },
+    "StockVN.dc.html": {
+      "expand": "fill",
+      "h": 1417,
+      "is_interactive": true,
+      "title": "VN Stock · FPT",
+      "w": 1440,
+      "x": 3040,
+      "y": 1980
+    },
+    "Token.dc.html": {
+      "expand": "fill",
+      "h": 1470,
+      "is_interactive": true,
+      "title": "Token · AVAX",
+      "w": 1440,
+      "x": 0,
+      "y": 1980
+    },
+    "Workspace.dc.html": {
+      "expand": "fill",
+      "h": 1114,
+      "is_interactive": true,
+      "title": "Workspace · index performance",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-22T03:20:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "flow": {
+      "kind": "title1",
+      "maxW": 6560,
+      "text": "Pantado: Market · Create · Workspace · Network, Ask lives in the robot button",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "why": {
+      "fill": "purple",
+      "text": "Same assets as the current app: colors, Inter Tight / Inter, logo, tiles, chips, tables, version banner, agent card. The left rail is gone; navigation is a top bar with Market, Create, Workspace and Network. Ask is a robot button at the bottom right of every page. Market rows open the chart page of that index, stock, VN stock or token; the star adds it to the watchlist. Swap, Buy, Sell and Redeem are removed.",
+      "w": 560,
+      "x": -660,
+      "y": 0
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Index.dc.html",
+    "Create.dc.html",
+    "Workspace.dc.html",
+    "AskWidget.dc.html",
+    "Token.dc.html",
+    "Stock.dc.html",
+    "StockVN.dc.html",
+    "Network.dc.html"
+  ],
+  "pages": [],
+  "title": "Pantado Index Layer"
+}

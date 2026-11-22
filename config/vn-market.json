@@ -1,0 +1,38 @@
+{
+  "$comment": "Vietnamese stocks (config/assets.json, display.chain \"hose\"): where market-data reads HOSE matched trades and the USD/VND rate. Source is a public, unofficial chart API until an official keyed feed (SSI FastConnect) is set up; see OPEN_QUESTIONS.md B98.",
+  "version": 1,
+  "source": {
+    "provider": "vndirect-dchart",
+    "baseUrl": "https://dchart-api.vndirect.com.vn/dchart/history",
+    "priceUnitVnd": 1000,
+    "pollSec": 15,
+    "dailyRefreshSec": 300,
+    "dailyLookbackDays": 400,
+    "volumeSessions": 20
+  },
+  "fx": {
+    "provider": "vietcombank-xml",
+    "url": "https://portal.vietcombank.com.vn/Usercontrols/TVPortal.TyGia/pXML.aspx",
+    "rate": "Transfer",
+    "refreshSec": 600
+  },
+  "session": {
+    "timezoneOffsetMin": 420,
+    "days": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "open": "09:00",
+    "close": "15:00",
+    "breaks": [
+      [
+        "11:30",
+        "13:00"
+      ]
+    ],
+    "staleInSessionSec": 300
+  }
+}

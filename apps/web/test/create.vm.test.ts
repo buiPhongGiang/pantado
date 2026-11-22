@@ -40,7 +40,6 @@ const S: CreateState = {
   vis: "Private",
   mode: "Auto",
   drift: 50,
-  first: "100",
   step: "edit",
 };
 
@@ -49,13 +48,11 @@ function input(over: Partial<CreateInput> = {}, s: Partial<CreateState> = {}): C
     s: { ...S, ...s },
     assets: ASSETS,
     tickerTaken: false,
-    creationFee: 5_000_000n,
     presetError: null,
     backtest: null,
-    slip: null,
-    quote: { data: null, error: null },
     tx: { status: "idle" },
     created: null,
+    editing: null,
     wallet: { connected: true, chainOk: true },
     env: { network: "fuji", explorer: "", nowSec: NOW, deployed: true },
     actions: { set: vi.fn(), toggle: vi.fn(), setW: vi.fn(), preset: vi.fn(), review: vi.fn(), confirm: vi.fn(), connect: vi.fn(), switchChain: vi.fn() },
@@ -73,10 +70,14 @@ describe("createVM", () => {
     expect(L(v, "total")).toBe(100);
     expect(L(v, "totalCol")).toBe("#3DD68C");
     expect(L(v, "mixText")).toBe("Stocks 60% · Tokens 40%");
-    expect(L(v, "cta")).toEqual({ bg: "#F2F2F3", fg: "#0B0B0D", label: "Review: create and buy" });
-    expect(L(v, "feeLine")).toBe("Creation fee 5 USDC");
-    expect(L(v, "creationFeeS")).toBe("5.00 USDC");
-    expect(L(v, "modeSummary")).toBe("Auto at 50% drift");
+    expect(L(v, "cta")).toEqual({ bg: "#F2F2F3", fg: "#0B0B0D", label: "Review: create" });
+    // no deposit (B101): nothing to pay but gas
+    expect(L(v, "feeLine")).toBe("No deposit · network fee only");
+    // Auto: back to targets on drift or every 30 days, applied by anyone (IndexRegistry.poke)
+    expect(L(v, "modeSummary")).toBe("Auto at ±50% drift or every 30 days");
+    expect(LA(v, "modes").map((m) => [m.label, m.on])).toEqual([["Off", "false"], ["Manual", "false"], ["Auto", "true"]]);
+    expect(L(v, "isAuto")).toBe(true);
+    expect(L(createVM(input({}, { mode: "Manual" })), "modeSummary")).toBe("You publish new weights");
     expect(L(v, "name")).toBe("My basket");
   });
 
@@ -87,10 +88,10 @@ describe("createVM", () => {
 
   it("metrics come from data or show —", () => {
     const none = createVM(input());
-    expect([L(none, "ret"), L(none, "vol"), L(none, "dd"), L(none, "slip")]).toEqual(["—", "—", "—", "—"]);
+    expect([L(none, "ret"), L(none, "vol"), L(none, "dd")]).toEqual(["—", "—", "—"]);
     expect(L(none, "retCol")).toBe("#8E8E96");
-    const v = createVM(input({ backtest: { ret: 0.124, vol: 0.48, dd: -0.21 }, slip: 0.0015 }));
-    expect([L(v, "ret"), L(v, "vol"), L(v, "dd"), L(v, "slip")]).toEqual(["+12.4%", "48%", "-21.0%", "0.15%"]);
+    const v = createVM(input({ backtest: { ret: 0.124, vol: 0.48, dd: -0.21 } }));
+    expect([L(v, "ret"), L(v, "vol"), L(v, "dd")]).toEqual(["+12.4%", "48%", "-21.0%"]);
   });
 
   it("validation labels in reference order", () => {
@@ -99,30 +100,29 @@ describe("createVM", () => {
     expect(validate({ ...S, w: { nvda: 100, btcb: 0 } }, false)).toBe("Every asset needs at least 1%");
     expect(validate({ ...S, ticker: "M" }, false)).toBe("Add a ticker");
     expect(validate(S, true)).toBe("This ticker is already taken.");
-    expect(validate({ ...S, first: "99" }, false)).toBe("First buy is at least 100 USDC");
+    expect(validate({ ...S, name: " " }, false)).toBe("Add a name");
     expect(validate(S, false)).toBeNull();
-    const v = createVM(input({}, { first: "50" }));
+    const v = createVM(input({}, { ticker: "" }));
     expect(L(v, "disabled")).toBe("true");
-    expect(L(v, "cta")).toEqual({ bg: "#1F1F23", fg: "#8E8E96", label: "First buy is at least 100 USDC" });
+    expect(L(v, "cta")).toEqual({ bg: "#1F1F23", fg: "#8E8E96", label: "Add a ticker" });
   });
 
-  it("review step shows the create quote", () => {
-    const q = { blockNumber: "1", usdcIn: "100000000", creationFee: "5000000", tradeFee: "500000", totalUsdc: "105000000", units: "995000000000000000", minUnits: "990000000000000000", levelUsd: "100", note: "" };
-    const v = createVM(input({ quote: { data: q, error: null } }, { step: "review", vis: "Public" }));
+  it("review step defines the index without a deposit", () => {
+    const v = createVM(input({}, { step: "review", vis: "Public" }));
     expect(L(v, "reviewing")).toBe(true);
     expect(L(v, "visLabel")).toBe("Public");
-    expect(L(v, "firstS")).toBe("100.00 USDC");
-    expect(L(v, "tradeFee")).toBe("0.50 USDC");
-    expect(L(v, "payS")).toBe("105.00 USDC");
-    expect(L(v, "unitsS")).toBe("0.99 MYBK at level 100");
+    expect(L(v, "reviewTitle")).toBe("Review: publish MYBK");
+    expect([L(v, "receiveLabel"), L(v, "unitsS")]).toEqual(["Starting level", "100.00"]);
+    expect(String(L(v, "reviewNote"))).toContain("Nothing is deposited, bought or held");
     const confirm = vi.fn();
-    F(createVM(input({ quote: { data: q, error: null }, actions: { ...input().actions, confirm } }, { step: "review" })), "confirm")();
+    F(createVM(input({ actions: { ...input().actions, confirm } }, { step: "review" })), "confirm")();
     expect(confirm).toHaveBeenCalled();
   });
 
   it("stale price in review blocks the signature", () => {
     const confirm = vi.fn();
-    const v = createVM(input({ quote: { data: null, error: { code: "PriceStale", message: "stale" } }, actions: { ...input().actions, confirm } }, { step: "review" }));
+    const stale = ASSETS.map((a) => (a.id === "btcb" ? { ...a, price: { usd: 1, ts: NOW - 7200, source: "x", fresh: false } } : a));
+    const v = createVM(input({ assets: stale, actions: { ...input().actions, confirm } }, { step: "review" }));
     expect(L(v, "created")).toBe(true);
     expect(LA(v, "notices")[0]!.tone).toBe("amber");
     F(v, "confirm")();
@@ -135,10 +135,19 @@ describe("createVM", () => {
     expect(LA(v, "basket").map((b) => b.w)).toEqual([60, 40]);
   });
 
+  it("edit mode publishes a new basket for an existing data index", () => {
+    const v = createVM(input({ editing: { ticker: "VNL", name: "Vietnam Leaders" } }, { step: "review" }));
+    expect(L(v, "reviewTitle")).toBe("Review: update VNL");
+    expect([L(v, "receiveLabel"), L(v, "unitsS")]).toEqual(["Level", "Carries over"]);
+    expect(String(L(v, "reviewNote"))).toContain("Nothing is traded");
+    expect(L(createVM(input({ editing: { ticker: "VNL", name: "Vietnam Leaders" } })), "cta")).toMatchObject({ label: "Review: update" });
+    expect(L(createVM(input({ editing: { ticker: "VNL", name: "x" } }, { step: "done" })), "createdText")).toBe("Updated VNL. The level carried over.");
+  });
+
   it("done step links to the new index", () => {
-    const v = createVM(input({ created: { index: "0xabc", units: "995000000000000000" } }, { step: "done", vis: "Public" }));
+    const v = createVM(input({ created: { index: "0xabc" } }, { step: "done", vis: "Public" }));
     expect(L(v, "created")).toBe(true);
-    expect(L(v, "createdText")).toBe("Published MYBK. You hold 0.99 units.");
+    expect(L(v, "createdText")).toBe("Published MYBK at level 100.");
     expect(L(v, "_href.IndexDetail")).toBe("/index/0xabc");
   });
 });

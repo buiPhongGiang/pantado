@@ -12,6 +12,8 @@ export const binding: Binding = {
     "Assets held directly, outside indexes": "walletSub",
   },
   slots: [
+    // no trading (owner): the positions' Trade button is an empty slot; Redeem stays (always open)
+    { tag: "a", attrs: { href: "IndexDetail.dc.html" }, text: "Trade", name: "tradeLink" },
     { tag: "div", attrs: { "style~": "font-size: 30px; font-weight: 600; letter-spacing: -0.02em; color: #3DD68C" }, name: "pnlTotal" },
     { tag: "button", attrs: { "style~": "margin-top: 10px; min-height: 40px" }, name: "claimButton" },
     { tag: "div", attrs: { "aria-hidden": "true", "style~": "display: flex; height: 8px; gap: 2px" }, name: "allocBar" },

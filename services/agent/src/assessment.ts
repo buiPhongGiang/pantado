@@ -67,7 +67,7 @@ export function assess(x: AssessmentInput): Assessment {
   const losses = ended.filter((p) => p.loss !== null && p.value).map((p) => ((p.loss as number) / (p.value as number)) * 100);
   const notes: string[] = [];
   if (label === "concentrated" && top?.symbol) notes.push(`${top.symbol} is ${topPct}% of the basket.`);
-  if (maxBuyUsd !== null) notes.push(`Buys above about $${maxBuyUsd.toLocaleString("en-US")} hit the per-trade cap of ${limitingAsset}.`);
+  // no trading in the app (owner): size caps and fee drag stay as data, but are not shown as buy / sell advice
   if (annualizedPct === null) notes.push("Not enough level history yet for a volatility estimate.");
 
   return {
@@ -86,13 +86,10 @@ export function assess(x: AssessmentInput): Assessment {
       `${label.charAt(0).toUpperCase()}${label.slice(1)} basket${top?.symbol ? `, largest position ${top.symbol} at ${topPct}%` : ""}.`,
       `${Math.round(stocksBps / 100)}% stocks, ${100 - Math.round(stocksBps / 100)}% tokens.`,
       annualizedPct === null ? "Volatility: not enough history yet." : `Annualised volatility ${annualizedPct}%.`,
-      `A buy and later sell costs about ${roundTripPct}% in fees and spreads.`,
-      ...notes.filter((n) => n.startsWith("Buys above")),
     ].join(" "),
     tags: [
       { label: label === "diversified" ? "Diversified" : label === "moderate" ? "Moderate concentration" : "Concentrated", good: label !== "concentrated" },
       { label: annualizedPct === null ? "Volatility —" : `Volatility ${annualizedPct}%`, good: annualizedPct !== null && annualizedPct < 60 },
-      { label: `Fee drag ${roundTripPct}%`, good: roundTripPct <= 1.5 },
       { label: `${x.plans.filter((p) => p.status === "Completed").length} rebalances completed`, good: true },
     ],
   };

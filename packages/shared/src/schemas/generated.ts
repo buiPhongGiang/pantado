@@ -82,7 +82,7 @@ export const appAssetSchema = z.strictObject({
   kind: assetKindSchema,
   tier: z.number().int().nullable(),
   decimals: z.number().int(),
-  displayChain: z.enum(["avalanche", "robinhood"]),
+  displayChain: z.enum(["avalanche", "robinhood", "hose"]),
   displayAddress: addressSchema.nullable(),
   badge: z.string().nullable(),
   logoURI: z.string().nullable(),

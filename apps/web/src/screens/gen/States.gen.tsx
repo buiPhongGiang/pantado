@@ -3,6 +3,7 @@
 "use client";
 import { Fragment, type ReactNode } from "react";
 import { A, P, bool, child, css, H, HI, interp, list, lookup, T, type LinkTarget, type Scope } from "../../lib/tpl";
+import { commonSlots } from "../../lib/common-slots";
 
 export const title = "States";
 
@@ -15,7 +16,7 @@ export function StatesScreen({
   nav: (target: LinkTarget, scope: Scope) => string;
   slots?: Record<string, (scope: Scope) => ReactNode>;
 }) {
-  const slot = (name: string, s: Scope): ReactNode => slots[name]?.(s) ?? null;
+  const slot = (name: string, s: Scope): ReactNode => (slots[name] ?? commonSlots[name])?.(s) ?? null;
   void A; void P; void HI; void H; void child; void list; void bool; void interp; void T;
   return (
     <div style={css("min-height: 100%; box-sizing: border-box; padding: 10px; background: #060607; color: #F2F2F3; font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch")}>
@@ -34,14 +35,7 @@ export function StatesScreen({
           </span>
           {"Ask"}
         </a>
-        <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Swap", v)}>
-          <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <path d="M4 8h13l-3.5-3.5M18 14H5l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          {"Swap"}
-        </a>
+        {slot("navNetwork", v)}
         <a style={css("position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; color: #B4B4BB")} href={nav("Marketplace", v)}>
           <span style={css("display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: transparent; color: #B4B4BB")}>
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">

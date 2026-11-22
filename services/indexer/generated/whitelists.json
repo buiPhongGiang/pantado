@@ -683,6 +683,131 @@
       "id": "ttwo",
       "symbol": "pTTWO",
       "kind": "stock"
+    },
+    {
+      "id": "fpt",
+      "symbol": "pFPT",
+      "kind": "stock"
+    },
+    {
+      "id": "vix",
+      "symbol": "pVIX",
+      "kind": "stock"
+    },
+    {
+      "id": "vic",
+      "symbol": "pVIC",
+      "kind": "stock"
+    },
+    {
+      "id": "hpg",
+      "symbol": "pHPG",
+      "kind": "stock"
+    },
+    {
+      "id": "ssi",
+      "symbol": "pSSI",
+      "kind": "stock"
+    },
+    {
+      "id": "shb",
+      "symbol": "pSHB",
+      "kind": "stock"
+    },
+    {
+      "id": "vhm",
+      "symbol": "pVHM",
+      "kind": "stock"
+    },
+    {
+      "id": "hdb",
+      "symbol": "pHDB",
+      "kind": "stock"
+    },
+    {
+      "id": "tcb",
+      "symbol": "pTCB",
+      "kind": "stock"
+    },
+    {
+      "id": "vpb",
+      "symbol": "pVPB",
+      "kind": "stock"
+    },
+    {
+      "id": "msn",
+      "symbol": "pMSN",
+      "kind": "stock"
+    },
+    {
+      "id": "vcb",
+      "symbol": "pVCB",
+      "kind": "stock"
+    },
+    {
+      "id": "ctg",
+      "symbol": "pCTG",
+      "kind": "stock"
+    },
+    {
+      "id": "mbb",
+      "symbol": "pMBB",
+      "kind": "stock"
+    },
+    {
+      "id": "gex",
+      "symbol": "pGEX",
+      "kind": "stock"
+    },
+    {
+      "id": "tpb",
+      "symbol": "pTPB",
+      "kind": "stock"
+    },
+    {
+      "id": "bsr",
+      "symbol": "pBSR",
+      "kind": "stock"
+    },
+    {
+      "id": "stb",
+      "symbol": "pSTB",
+      "kind": "stock"
+    },
+    {
+      "id": "mwg",
+      "symbol": "pMWG",
+      "kind": "stock"
+    },
+    {
+      "id": "vnd",
+      "symbol": "pVND",
+      "kind": "stock"
+    },
+    {
+      "id": "acb",
+      "symbol": "pACB",
+      "kind": "stock"
+    },
+    {
+      "id": "nvl",
+      "symbol": "pNVL",
+      "kind": "stock"
+    },
+    {
+      "id": "kdh",
+      "symbol": "pKDH",
+      "kind": "stock"
+    },
+    {
+      "id": "vci",
+      "symbol": "pVCI",
+      "kind": "stock"
+    },
+    {
+      "id": "cii",
+      "symbol": "pCII",
+      "kind": "stock"
     }
   ]
 }

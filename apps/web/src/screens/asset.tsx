@@ -180,7 +180,8 @@ export default function Asset({ id }: { id: string }) {
   }, [amt, side, decimals]);
   const tokenIn = side === "Buy" ? usdc : token;
   const tokenOut = side === "Buy" ? token : usdc;
-  const qKey = tokenIn && tokenOut && amountIn > 0n ? `${tokenIn}:${tokenOut}:${amountIn}` : null;
+  // no trading (owner): the buy / sell card is not shown, so no swap quote is fetched
+  const qKey: string | null = null;
   const quote = useQuote<SwapQuote>(qKey, () => apiPost<SwapQuote>("/quote/swap", { tokenIn, tokenOut, amountIn: amountIn.toString() }));
 
   const setSide = (s: Side): void => {

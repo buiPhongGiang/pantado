@@ -92,7 +92,7 @@ export function poolRows(a: AssetDetail, pools: PoolView[], pxs: string, vol24: 
         vol: vol24 === null ? "—" : vol(vol24),
         role: "route" as const,
       };
-    const chain = p.chain === "robinhood" ? "Robinhood Chain" : "Avalanche";
+    const chain = p.chain === "robinhood" ? "On-chain" : "Avalanche";
     const first = refSeen++ === 0;
     return {
       name: "Reference pool",
@@ -218,14 +218,16 @@ export function assetVM(i: AssetInput): Scope {
     // the asset's market (reference pools on mainnet); the Pantado venue row below keeps the app's own trades
     vol24S: b?.volume24hUsd === null || b?.volume24hUsd === undefined ? "—" : vol(b.volume24hUsd),
     liqS: "—",
-    capS,
+    // no trading (owner): the third stat counts the indexes holding the asset instead of the per-trade limit
+    capLabel: "In indexes",
+    capS: String(holding.length),
     routeName: isStock ? "Pantado stock venue" : "Pantado token venue",
     spreadS: a?.risk ? `${(a.risk.spreadBps / 100).toFixed(2)}%` : "—",
     chart,
     chartTitle: `${sym} / USDC · 1D`,
     chartAria: `Daily candlestick chart of ${sym}`,
     chartSource: i.candles?.source ?? null,
-    poolRows: a ? poolRows(a, i.pools, pxs, vol24) : [],
+    poolRows: a ? poolRows(a, i.pools.filter((p) => p.kind !== "route"), pxs, vol24) : [],
     perf: perfs,
     chg24: perfs[0],
     notices,

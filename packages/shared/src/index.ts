@@ -12,4 +12,7 @@ export * from "./schemas/indexes.js";
 export * from "./schemas/generated.js";
 export * from "./schemas/deployments.js";
 export * from "./schemas/prices.js";
+export * from "./schemas/vn-market.js";
+export * from "./schemas/pricechain.js";
 export * from "./math/index.js";
+export * from "./vn-market.js";

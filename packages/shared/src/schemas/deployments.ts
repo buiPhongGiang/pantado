@@ -23,6 +23,8 @@ export const deploymentSchema = z.object({
     rebalancer: addressSchema,
     lens: addressSchema,
     swapRouter: addressSchema,
+    /** Indexes as data (no deposit); absent on deployments made before it existed. */
+    indexRegistry: addressSchema.optional(),
   }),
   assets: z.record(z.string().regex(/^[a-z0-9]+$/), addressSchema),
 }).refine((d) => d.contracts.tokenVenue !== undefined || d.contracts.dexVenue !== undefined, { message: "a token venue (tokenVenue or dexVenue) is required" });

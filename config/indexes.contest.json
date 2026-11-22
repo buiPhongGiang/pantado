@@ -274,7 +274,7 @@
    "firstBuyUsd": "500",
    "visibility": "public",
    "owner": "demo-6",
-   "description": "🏛️⛓️ Stocks, Bitcoin, gold and AVAX in one token.\n\nNVIDIA, Apple and Coinbase as tokenized stocks, next to BTC.b, AVAX and tokenized gold. The real-world assets your brokerage holds and the crypto it does not, in a single basket you can redeem in kind.\n\n🌐 The insight: tokenized stocks now trade on-chain around the clock. Pairing them with crypto lets one index hold assets that usually live in two separate accounts.\n\n📐 NVDA 20%, AAPL 15%, COIN 15%, BTC.b 20%, AVAX 20%, gold 10%.\n\n🧪 Stock prices come from Robinhood Chain until permissionless stock pools launch on Avalanche.",
+   "description": "🏛️⛓️ Stocks, Bitcoin, gold and AVAX in one token.\n\nNVIDIA, Apple and Coinbase as tokenized stocks, next to BTC.b, AVAX and tokenized gold. The real-world assets your brokerage holds and the crypto it does not, in a single basket you can redeem in kind.\n\n🌐 The insight: tokenized stocks now trade on-chain around the clock. Pairing them with crypto lets one index hold assets that usually live in two separate accounts.\n\n📐 NVDA 20%, AAPL 15%, COIN 15%, BTC.b 20%, AVAX 20%, gold 10%.\n\n🧪 Stock prices come from an on-chain reference market until permissionless stock pools launch on Avalanche.",
    "buys": [
     {
      "by": "demo-3",
@@ -287,6 +287,51 @@
     {
      "by": "demo-7",
      "usd": "600"
+    }
+   ]
+  },
+  {
+   "id": "idx-vnl",
+   "name": "Vietnam Leaders",
+   "ticker": "VNL",
+   "mode": "Manual",
+   "components": {
+    "fpt": 2500,
+    "vcb": 2000,
+    "hpg": 2000,
+    "mwg": 2000,
+    "vhm": 1500
+   },
+   "firstBuyUsd": "100",
+   "visibility": "public",
+   "owner": "demo-7",
+   "description": "The five Vietnamese leaders by traded value across tech, banking, steel, retail and property: FPT, Vietcombank, Hoa Phat, Mobile World and Vinhomes. Prices from HOSE matched trades.",
+   "buys": [
+    {
+     "by": "demo-5",
+     "usd": "300"
+    }
+   ]
+  },
+  {
+   "id": "idx-vnai",
+   "name": "Vietnam Tech + AI",
+   "ticker": "VNAI",
+   "mode": "Manual",
+   "components": {
+    "fpt": 3000,
+    "nvda": 3000,
+    "vcb": 2000,
+    "btcb": 2000
+   },
+   "firstBuyUsd": "100",
+   "visibility": "public",
+   "owner": "demo-8",
+   "description": "Vietnam's largest tech company next to the AI leader, with Vietcombank and Bitcoin for balance. Mixes HOSE, US and crypto prices in one index.",
+   "buys": [
+    {
+     "by": "demo-3",
+     "usd": "200"
     }
    ]
   }

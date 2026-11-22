@@ -15,6 +15,8 @@ export const binding: Binding = {
       "assess.text",
   },
   slots: [
+    // no buy / sell of the index token (owner): the trade card is an empty slot
+    { tag: "div", attrs: { style: "background: #0B0B0D; border: 1px solid #1C1C20; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px" }, name: "tradeCard" },
     // chart header: the 15m · 1h · 4h · 1D · 1W group drives the chart
     { tag: "div", attrs: { role: "group", "aria-label": "Interval" }, name: "interval" },
     { tag: "div", attrs: { role: "img", "aria-label~": "candlestick" }, name: "levelChart" },
@@ -24,7 +26,7 @@ export const binding: Binding = {
     { tag: "div", attrs: { "style~": "grid-template-columns: repeat(4, minmax(0, 1fr))" }, name: "changes" },
     { tag: "div", attrs: { "style~": "gap: 6px; padding: 4px 2px" }, name: "split" },
     { tag: "div", attrs: { style: "display: flex; flex-wrap: wrap; gap: 6px" }, name: "assessTags" },
-    { tag: "a", attrs: { href: "{{cta.href}}" }, name: "cta" },
+    // (the trade card's cta slot went with the card)
     // owner (B96): Fork removed; one "Ask agent" that opens Ask with a question about this index
     { tag: "div", attrs: { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 8px" }, name: "agentActions" },
   ],

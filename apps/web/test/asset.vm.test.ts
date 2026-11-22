@@ -22,8 +22,8 @@ const nvda: AssetDetail = {
   decimals: 18,
   color: "#76B900",
   logoURI: null,
-  badge: "Reference market: Robinhood Chain (on-chain)",
-  dataSource: "Reference market: Robinhood Chain (on-chain)",
+  badge: "Reference market: On-chain",
+  dataSource: "Reference market: On-chain",
   display: { chain: "robinhood", address: null },
   execution: { network: "fuji", address: "0x00000000000000000000000000000000000000aa", symbol: "pNVDA" },
   price: { usd: 169.95, ts: NOW - 30, source: "reference", fresh: true },
@@ -53,9 +53,11 @@ function input(over: Partial<AssetInput> = {}): AssetInput {
 describe("assetVM", () => {
   it("binds the reference fields from live data", () => {
     const v = assetVM(input());
-    expect(L(v, "a")).toMatchObject({ sym: "NVDA", execSym: "pNVDA", name: "NVIDIA", kindS: "Stock", badge: "Reference market: Robinhood Chain (on-chain)", ini2: "", avBg: logoFill("nvda") });
+    expect(L(v, "a")).toMatchObject({ sym: "NVDA", execSym: "pNVDA", name: "NVIDIA", kindS: "Stock", badge: "Reference market: On-chain", ini2: "", avBg: logoFill("nvda") });
     expect(L(v, "pxS")).toBe("$169.95");
-    expect(L(v, "capS")).toBe("$25,000");
+    // no trading (owner): the third stat counts the indexes holding the asset (none in this input)
+    expect(L(v, "capLabel")).toBe("In indexes");
+    expect(L(v, "capS")).toBe("0");
     expect(L(v, "spreadS")).toBe("0.15%");
     expect(L(v, "routeName")).toBe("Pantado stock venue");
     expect(L(v, "liqS")).toBe("—");
@@ -140,8 +142,9 @@ describe("assetVM", () => {
     ];
     const v = assetVM(input({ trades, pools, ui: { side: "Buy", amt: "500", tab: "Transactions" } }));
     expect(LA(v, "txs")[0]).toEqual({ time: "11m ago", side: "Sell", px: "$169.74", amt: "5.0000", value: "$848.70", wallet: "0xc03b…e4a1", col: "#FF6B6B" });
-    expect(LA(v, "poolRows")[0]).toMatchObject({ name: "Pantado stock venue", sub: "Avalanche Fuji · fills your trade", pair: "pNVDA / USDC", price: "$169.95", role: "route", vol: "$849" });
-    expect(LA(v, "poolRows")[1]).toMatchObject({ name: "Reference pool", sub: "Robinhood Chain · sets the price", role: "source", price: "—" });
+    // no trading (owner): the Pantado venue route row is not listed, only the market's pools
+    expect(LA(v, "poolRows")).toHaveLength(1);
+    expect(LA(v, "poolRows")[0]).toMatchObject({ name: "Reference pool", sub: "On-chain · sets the price", role: "source", price: "—" });
     expect(L(v, "tabTx")).toBe(true);
   });
 

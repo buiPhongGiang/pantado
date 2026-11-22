@@ -230,7 +230,7 @@ export function assetScope(ac: AssetCardData, candles: Candle[]): Scope {
     liq: "—", // pool liquidity is not exposed by the API yet
     m30,
     m30Col: colOf(m30),
-    badge: ac.kind === "stock" ? (ac.badge ?? "Reference market: Robinhood Chain (on-chain)") : null,
+    badge: ac.kind === "stock" ? (ac.badge ?? "Reference market: On-chain") : null,
     href: `/asset/${ac.id}`,
     candles,
   };

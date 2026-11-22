@@ -8,6 +8,9 @@ export const binding: Binding = {
   slots: [
     { tag: "col", attrs: { style: "width: 14%" }, name: "dataCol" },
     { tag: "th", attrs: {}, text: "Data", name: "dataHead" },
+    // no trading (owner): the Trade column (header + Buy / Swap button) is empty; rows open the asset or index page
+    { tag: "th", attrs: {}, childText: "Trade", name: "tradeHead" },
+    { tag: "td", attrs: { style: "padding: 5px 20px 5px 12px" }, name: "tradeCell" },
     { tag: "td", attrs: { style: "padding: 5px 12px; text-align: left; white-space: nowrap" }, name: "dataCell" },
   ],
   text: {

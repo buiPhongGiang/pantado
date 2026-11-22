@@ -8,6 +8,7 @@ import { findRepoRoot } from "@pantado/shared";
 
 export const CONTRACTS = [
   "IndexFactory",
+  "IndexRegistry",
   "IndexVault",
   "IndexLens",
   "AssetRegistry",
