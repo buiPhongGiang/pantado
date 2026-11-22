@@ -10,18 +10,6 @@ level on-chain as a verifiable benchmark. An AI analyst helps you research and d
 Built on Avalanche · <a href="https://pantado.xyz">pantado.xyz</a>
 </p>
 
-<p align="center">
-<a href="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml"><img alt="contracts CI" src="https://github.com/buiPhongGiang/pantado/actions/workflows/contracts.yml/badge.svg"></a>
-<img alt="Avalanche L1" src="https://img.shields.io/badge/Avalanche-L1%20%2B%20ICM-E84142?logo=avalanche&logoColor=white">
-<img alt="Index Layer" src="https://img.shields.io/badge/Index%20Layer-verifiable%20benchmarks-9052F9">
-<img alt="AI agent" src="https://img.shields.io/badge/AI%20agent-Claude-D97757">
-<img alt="Tests" src="https://img.shields.io/badge/tests-450%2B%20passing-2fbf71">
-</p>
-
-<p align="center">
-<b>🌐 App:</b> <a href="https://pantado.xyz">pantado.xyz</a> · <b>🎬 Demo video:</b> [link] · <b>📊 Pitch deck:</b> [link] · <b>👥 Team:</b> [names]
-</p>
-
 ---
 
 ## At a glance
